@@ -1,0 +1,29 @@
+# Raw, downloaded and snapshot data: never committed (OpenAQ licences vary by provider).
+# Only the synthetic fixtures and their provenance notes are tracked.
+data/*
+!data/fixtures/
+!data/.gitkeep
+
+# Secrets and local settings
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# dbt build output (from M5)
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

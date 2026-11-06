@@ -1,0 +1,59 @@
+# CI: the same checks as `make test`, run on GitHub's Ubuntu runners.
+# The database is a service container with the same PostGIS image digest as
+# docker-compose.yml, initialised by the same docker/initdb script.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      POSTGRES_USER: pgadmin
+      POSTGRES_PASSWORD: ci-only-not-secret
+      POSTGRES_DB: postgres
+      SENTINEL_DB_USER: sentinel
+      SENTINEL_DB_PASSWORD: ci-only-not-secret
+      SENTINEL_DB_NAME: warehouse
+      AIRFLOW_DB_USER: airflow
+      AIRFLOW_DB_PASSWORD: ci-only-not-secret
+      PGHOST: localhost
+      PGPORT: "5432"
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Start PostGIS (same digest and init script as Compose)
+        run: |
+          docker run -d --name db -p 5432:5432 \
+            -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB \
+            -e SENTINEL_DB_USER -e SENTINEL_DB_PASSWORD -e SENTINEL_DB_NAME \
+            -e AIRFLOW_DB_USER -e AIRFLOW_DB_PASSWORD \
+            -v "$PWD/docker/initdb:/docker-entrypoint-initdb.d:ro" \
+            postgis/postgis@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+          for i in $(seq 1 60); do
+            docker exec db pg_isready -U "$SENTINEL_DB_USER" -d "$SENTINEL_DB_NAME" && exit 0
+            sleep 2
+          done
+          docker logs db; exit 1
+
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.12.23"
+
+      - name: Install locked dependencies
+        run: uv sync --frozen
+
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+
+      - name: Types
+        run: uv run mypy
+
+      - name: Tests (unit + integration)
+        run: uv run pytest -p no:cacheprovider

@@ -1,0 +1,147 @@
+# Sentinel-AQ services. Profiles keep the default stack small (ADR-004):
+#   make up          -> db only
+#   make test        -> db + a one-off `app` container
+#   make up-airflow  -> db + Airflow (api-server, scheduler, dag-processor)
+name: sentinel-aq
+
+x-airflow-common: &airflow-common
+  # Built once, by airflow-init only. If every Airflow service had a `build:` key,
+  # Compose would build the same image four times in parallel (seen 2026-11-06: it
+  # stalled a 4 GB Docker VM for 20+ minutes).
+  image: sentinel-aq/airflow:local
+  pull_policy: never
+  profiles: ["airflow"]
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@db:5432/airflow_meta
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    # Local development only: the built-in simple auth manager treats every visitor
+    # as admin. The UI is published on 127.0.0.1 only (see airflow-apiserver ports).
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    # Small footprint for a 4 GB Docker VM.
+    AIRFLOW__API__WORKERS: "1"
+    AIRFLOW__DAG_PROCESSOR__PARSING_PROCESSES: "1"
+    AIRFLOW__CORE__PARALLELISM: "4"
+    # What pipeline tasks need to reach the warehouse (not the superuser).
+    PGHOST: db
+    PGPORT: "5432"
+    SENTINEL_DB_USER: ${SENTINEL_DB_USER}
+    SENTINEL_DB_PASSWORD: ${SENTINEL_DB_PASSWORD}
+    SENTINEL_DB_NAME: ${SENTINEL_DB_NAME}
+  user: "${AIRFLOW_UID:-50000}:0"
+  volumes:
+    - ./dags:/opt/airflow/dags:ro
+    - airflow_logs:/opt/airflow/logs
+  depends_on:
+    db:
+      condition: service_healthy
+    airflow-init:
+      condition: service_completed_successfully
+
+services:
+  db:
+    # postgis/postgis:18-3.6 (PostgreSQL 18, PostGIS 3.6), digest resolved 2026-11-06.
+    image: postgis/postgis@sha256:4a43e3c3e5d55b9208240fc71db543b79c638766280c625a425bd0a2390989c4
+    container_name: sentinel-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      # Read by docker/initdb/00_init.sh on first start only.
+      SENTINEL_DB_USER: ${SENTINEL_DB_USER}
+      SENTINEL_DB_PASSWORD: ${SENTINEL_DB_PASSWORD}
+      SENTINEL_DB_NAME: ${SENTINEL_DB_NAME}
+      AIRFLOW_DB_USER: ${AIRFLOW_DB_USER}
+      AIRFLOW_DB_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+    ports:
+      # 127.0.0.1 only: the database is not reachable from other machines.
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+      - ./sql:/sql:ro
+    shm_size: 256mb
+    healthcheck:
+      # Healthy only once the pipeline database exists and accepts the pipeline role.
+      test: ["CMD-SHELL", "pg_isready -U $${SENTINEL_DB_USER} -d $${SENTINEL_DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    image: sentinel-aq/app:local
+    profiles: ["tools"]
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      SENTINEL_DB_USER: ${SENTINEL_DB_USER}
+      SENTINEL_DB_PASSWORD: ${SENTINEL_DB_PASSWORD}
+      SENTINEL_DB_NAME: ${SENTINEL_DB_NAME}
+      SENTINEL_LOG_LEVEL: ${SENTINEL_LOG_LEVEL:-INFO}
+    volumes:
+      # The repo is mounted, so code edits need no rebuild. The venv lives in /opt/venv.
+      - .:/workspace
+    depends_on:
+      db:
+        condition: service_healthy
+
+  airflow-init:
+    <<: *airflow-common
+    build:
+      context: .
+      dockerfile: docker/airflow.Dockerfile
+    pull_policy: build
+    command: ["bash", "-c", "airflow db migrate && airflow version"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  airflow-apiserver:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    name: sentinel_pgdata
+  airflow_logs:
+    name: sentinel_airflow_logs

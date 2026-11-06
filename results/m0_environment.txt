@@ -1,0 +1,17 @@
+# M0 environment snapshot, written by the command recorded in docs/report_notes.md
+captured_utc: 2026-11-06T12:56:13Z
+host_os: Microsoft Windows 11 Pro 10.0.26300
+host_cpu: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+host_ram_gb: 15.7
+docker_server: 29.8.1
+docker_vm_mem_bytes: 4107997184
+docker_vm_cpus: 8
+compose: 5.5.1
+git_commit: none yet (no commit on branch m0/skeleton)
+airflow_ui_health_http: 200
+
+## docker stats --no-stream (Airflow profile idle, ~2 min after start, after one smoke DAG run)
+sentinel-aq-airflow-apiserver-1	294.2MiB / 3.826GiB	0.15%
+sentinel-aq-airflow-dag-processor-1	211.7MiB / 3.826GiB	51.23%
+sentinel-aq-airflow-scheduler-1	377.4MiB / 3.826GiB	31.46%
+sentinel-db	67.5MiB / 3.826GiB	1.92%

@@ -1,0 +1,14 @@
+# Store and check out text files with LF line endings on every OS.
+# Containers run Linux, where Windows CRLF endings break shell scripts (docker/initdb)
+# and Makefile recipes.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files are never converted. Fixture checksums depend on exact bytes.
+*.gz binary
+*.png binary
+*.zip binary
