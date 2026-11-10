@@ -12,7 +12,7 @@ import sys
 
 import psycopg
 
-from sentinel import __version__, m1
+from sentinel import __version__, commands, m1
 from sentinel.config import load_scope
 from sentinel.http import HttpClient
 from sentinel.log import configure_logging, get_logger
@@ -56,6 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("coverage-hours", help="hours per day from fetched files")
     sub.add_parser("coverage-report", help="summary CSV and Markdown table")
     sub.add_parser("snapshot", help="daily archive snapshot of scope.snapshot_locations")
+    commands.add_parsers(sub)
     return parser
 
 
@@ -89,6 +90,8 @@ def main(argv: list[str] | None = None) -> int:
         print(m1.coverage_report(scope, paths))
     elif args.command == "snapshot":
         print(m1.snapshot(scope, m1.archive_client(), paths))
+    else:
+        return commands.handle(args, scope)
     return 0
 
 

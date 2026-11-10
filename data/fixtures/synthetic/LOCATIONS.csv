@@ -1,0 +1,3 @@
+location_id,name,locality,country_code,timezone,provider,latitude,longitude
+99000001,SYNTHETIC-A,Synthetic,PK,Asia/Karachi,synthetic,31.5,74.3
+99000002,SYNTHETIC-B,Synthetic,PK,Asia/Karachi,synthetic,31.55,74.35

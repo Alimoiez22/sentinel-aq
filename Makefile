@@ -14,7 +14,7 @@ ifneq ($(shell echo $$((1+1))),2)
 $(error This Makefile needs a POSIX shell. Run make from Git Bash or WSL, not PowerShell or cmd)
 endif
 
-.PHONY: help setup build up up-airflow down status logs psql check-db fixtures \
+.PHONY: help setup build up up-airflow down status logs psql check-db fixtures db-aux migrate \
         discover coverage fetch coverage-hours snapshot test-network \
         lint fmt typecheck test test-unit test-integration demo clean destroy
 
@@ -55,6 +55,14 @@ logs:
 ## psql: interactive SQL prompt as the pipeline role (type \q to leave)
 psql:
 	$(COMPOSE) exec db sh -c 'psql -U "$$SENTINEL_DB_USER" -d "$$SENTINEL_DB_NAME"'
+
+## db-aux: create warehouse_test and warehouse_exp on an existing volume (idempotent)
+db-aux: up
+	$(COMPOSE) exec -T db bash /docker-entrypoint-initdb.d/10_aux_databases.sh
+
+## migrate: apply sql/ddl migrations and load guidelines into the warehouse
+migrate: up
+	$(RUN_APP) sentinel migrate
 
 ## check-db: connect as the pipeline role and print PostgreSQL and PostGIS versions
 check-db: up

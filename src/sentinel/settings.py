@@ -29,10 +29,11 @@ class Settings(BaseSettings):
     # Needed only by `sentinel discover`. Empty means "not configured".
     openaq_api_key: SecretStr = Field(default=SecretStr(""), alias="OPENAQ_API_KEY")
 
-    def conninfo(self) -> str:
-        """Return a libpq connection string. The password is never logged."""
+    def conninfo(self, dbname: str | None = None) -> str:
+        """Return a libpq connection string (optionally to another database of the same
+        server, e.g. warehouse_test or warehouse_exp). The password is never logged."""
         return (
-            f"host={self.pg_host} port={self.pg_port} dbname={self.pg_database} "
+            f"host={self.pg_host} port={self.pg_port} dbname={dbname or self.pg_database} "
             f"user={self.pg_user} password={self.pg_password.get_secret_value()}"
         )
 

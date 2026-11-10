@@ -1,0 +1,58 @@
+# Quality rules (PROJECT_BRIEF §8). Validated by src/sentinel/quality/rules.py.
+# Every rule has a stable id and a version: a changed rule gets a new version, and each
+# quarantined row records the (id, version) that rejected it.
+# Actions: quarantine = row removed and stored in quarantine.aq_rejects;
+#          flag = row kept, flag added to fact.flags; block = location-day not published.
+version: 1
+
+# Location-day is BLOCKED when more than this share of in-scope rows is quarantined.
+# Project choice (not a cited standard); tested at 20% and documented in QUALITY_RULES.md.
+reject_rate_block_threshold: 0.20
+
+# A daily mean needs >= 18 of 24 hourly values (EU 2008/50/EC Annex XI; RESEARCH §2.9).
+completeness_min_hours: 18
+
+# Quarantine ceiling and flag band per parameter, in µg/m³ (RESEARCH §7.14: PMS5003
+# maximum range >= 1000, BAM-1020 default range 1 mg/m³; 500 = PMS5003 effective range).
+ceiling_ugm3: {pm25: 1000.0, pm10: 1000.0}
+flag_band_ugm3: {pm25: 500.0, pm10: 500.0}
+
+# Documented safe unit conversions to µg/m³. Only spellings of the same unit and the
+# exact SI factor for mg/m³. Anything else (e.g. ppm) is NOT converted: quarantine + escalate.
+unit_factors_to_ugm3:
+  "µg/m³": 1.0     # U+00B5 micro sign (seen in the real file, RESEARCH §5.2)
+  "μg/m³": 1.0     # U+03BC Greek mu
+  "ug/m3": 1.0
+  "µg/m3": 1.0
+  "mg/m³": 1000.0
+  "mg/m3": 1000.0
+
+# Stuck sensor: the same value for at least this many consecutive hours -> flag.
+stuck_min_hours: 6
+
+# Hampel filter (RESEARCH §2.8): window of +/- half_window hours around each point,
+# flag if |x - median| > n_sigmas * 1.4826 * MAD. MAD = 0 never flags.
+hampel: {half_window: 3, n_sigmas: 3.0}
+
+# Relocation: a sensor's coordinates moving more than this many degrees (~110 m) -> flag
+# and open a new position version in wh.dim_sensor.
+relocation_tolerance_deg: 0.001
+
+rules:
+  - {id: Q01_bad_timestamp,      version: 1, action: quarantine, what: "datetime does not parse"}
+  - {id: Q02_bad_value,          version: 1, action: quarantine, what: "value missing, not a number, NaN or inf"}
+  - {id: Q03_negative,           version: 1, action: quarantine, what: "value < 0"}
+  - {id: Q04_above_ceiling,      version: 1, action: quarantine, what: "value > ceiling_ugm3 after unit conversion"}
+  - {id: Q05_unknown_unit,       version: 1, action: quarantine, what: "unit not in unit_factors_to_ugm3 (escalates)"}
+  - {id: Q06_outside_local_day,  version: 1, action: quarantine, what: "hour not within the file's local day"}
+  - {id: Q07_future,             version: 1, action: quarantine, what: "timestamp after the processing time"}
+  - {id: Q08_offset_mismatch,    version: 1, action: quarantine, what: "offset in file != location time-zone offset"}
+  - {id: Q09_wrong_location,     version: 1, action: quarantine, what: "location_id in row != file's location"}
+  - {id: Q10_bad_sensor,         version: 1, action: quarantine, what: "sensor id missing or not a number"}
+  - {id: Q11_duplicate,          version: 1, action: quarantine, what: "second+ row for (sensor, hour); first row kept"}
+  - {id: Q12_high_band,          version: 1, action: flag,       what: "value in (flag_band, ceiling]"}
+  - {id: Q13_stuck,              version: 1, action: flag,       what: "same value >= stuck_min_hours consecutive hours"}
+  - {id: Q14_spike_hampel,       version: 1, action: flag,       what: "Hampel outlier within the day"}
+  - {id: Q15_relocated,          version: 1, action: flag,       what: "coordinates moved > relocation_tolerance_deg"}
+  - {id: Q16_out_of_scope,       version: 1, action: info,       what: "parameter not in scope; dropped, counted"}
+  - {id: B01_reject_rate,        version: 1, action: block,      what: "quarantined share > reject_rate_block_threshold"}

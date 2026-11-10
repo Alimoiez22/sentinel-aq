@@ -211,3 +211,61 @@ for accepted decisions are rewritten by the author in his own words.
   numbers exist only for the shortlist. Arrival lag uses LastModified, which for a
   patched file is the patch time, so the lag of revised files is overstated. This is
   noted in the report.
+
+## ADR-014 — Marts as plain SQL files run on both schemas, instead of dbt
+- **Date:** 2026-11-11 · **Milestone:** M5 · **Status:** proposed by Claude (changes the brief: author to accept or reject)
+- **Context.** The brief lists dbt for the marts. Three needs pull the other way:
+  1. A mart refresh must be scoped to the exact location-days a batch touched, and must
+     commit in the SAME transaction as the publication gate. Otherwise a crash between
+     them (F11) leaves marts and gate out of step.
+  2. "Incremental == golden" is only meaningful if both are produced by identical logic.
+  3. The experiments run hundreds of trials, and dbt starts a new process (several
+     seconds) on every invocation.
+- **Options.** (a) dbt incremental models with key variables, run as a subprocess.
+  (b) SQL files run by our Python inside the stage transaction.
+- **Decision.** (b). `sql/marts/refresh_daily.sql` runs with `search_path` set to `wh`
+  (live) or `golden` (rebuild): the same file produces both. dbt-core stays installed
+  but unused. Removing it is a follow-up for the author to decide.
+- **Consequences.** We lose dbt's lineage graph and its documentation site. We gain an
+  atomic gate + mart refresh, and an exact comparison against golden. Tested:
+  `test_crash_mid_marts_resumes_from_checkpoint` and `test_incremental_equals_golden`.
+
+## ADR-015 — One transaction per stage, under a transaction-level advisory lock
+- **Date:** 2026-11-11 · **Milestone:** M3 · **Status:** proposed by Claude
+- **Decision.** register, stage, quality+fact and marts+gate each run in one
+  transaction. Each takes `pg_advisory_xact_lock(namespace, hash(location-day))` and
+  writes its checkpoint inside the same transaction. Every write replaces the
+  location-day (delete + insert).
+- **Why.** A crash anywhere rolls back the whole stage, checkpoint included, so a rerun
+  repeats it. Replacing the location-day makes a repeat produce the same rows
+  (idempotence). The transaction-level lock is released on rollback too; a
+  session-level lock would survive it (RESEARCH §7.6).
+- **Evidence.** Integration tests cover a crash after staging, a crash mid-mart, and a
+  dropped connection. A Hypothesis property test runs random arrivals, duplicates,
+  replays and revisions, and always converges to golden. A deliberate mutation (process
+  the oldest revision instead of the newest) made that property test fail, which shows
+  the test can detect real errors.
+
+## ADR-016 — Separate databases for tests and experiments
+- **Date:** 2026-11-11 · **Milestone:** M3 · **Status:** proposed by Claude
+- **Decision.** `warehouse_test` (pytest) and `warehouse_exp` (experiments) are owned by
+  the pipeline role, created by `docker/initdb/10_aux_databases.sh` (or `make db-aux`
+  on an existing volume). `reset_database` refuses any other database name.
+- **Consequences.** A test or experiment reset can never empty the live warehouse.
+  Tested: `test_reset_refuses_live_warehouse`.
+
+## ADR-017 — Order-independent definitions where incremental must equal golden
+- **Date:** 2026-11-11 · **Milestone:** M4/M7 · **Status:** proposed by Claude
+- **Context.** Anything that depends on processing order breaks "incremental == golden"
+  for reasons that are not bugs.
+- **Decisions.**
+  - **Relocation (Q15)** compares coordinates with the location's registered position,
+    not with the last position seen. `wh.dim_sensor` still records position history.
+  - **Daily means** use `avg()` over `numeric`, rounded to 6 decimals, because
+    floating-point sums depend on row order.
+  - **Duplicates (Q11)** keep the first row in file order, which is deterministic.
+  - **Status** `revised` is compared as `complete`: golden cannot know publication
+    history, and the revision itself is audited in `ops.revision_diff`.
+- **Consequences.** The checksums and key comparisons in `make reconcile` are exact.
+  Limitation: the Hampel and stuck-sensor flags look at one day only (no cross-day
+  context). This is listed for LIMITATIONS.

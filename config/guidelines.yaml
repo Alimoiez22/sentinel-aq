@@ -1,0 +1,10 @@
+# WHO Global Air Quality Guidelines 2021 (who2021aqg; values as reproduced in
+# COMEAP 2021 Annexe A, comeap2021; verified 2026-11-05, RESEARCH §2.10).
+# 24-hour levels are 99th-percentile statements (3-4 exceedance days per year allowed),
+# so the marts count "exceedance days"; a single day is not called a breach.
+source: "WHO Global Air Quality Guidelines (2021), ISBN 9789240034228"
+guidelines:
+  - {parameter: pm25, averaging: 24h,    value_ugm3: 15.0}
+  - {parameter: pm25, averaging: annual, value_ugm3: 5.0}
+  - {parameter: pm10, averaging: 24h,    value_ugm3: 45.0}
+  - {parameter: pm10, averaging: annual, value_ugm3: 15.0}
