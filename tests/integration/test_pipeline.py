@@ -240,3 +240,18 @@ def test_reset_refuses_live_warehouse() -> None:
 
     with connect() as live, pytest.raises(UnsafeResetError):
         reset_database(live)
+
+
+def test_each_stage_is_committed_and_visible_to_other_sessions(conn: Conn, pipe: Pipeline) -> None:
+    """Regression (found by the experiment runner): stages must COMMIT, not just create
+    savepoints inside one long implicit transaction."""
+    key, data = synthetic_files()[0]
+    bid = pipe.register(conn, key, data, T).batch_id
+    assert pipe.process(conn, bid)
+    conn.rollback()  # discards nothing: every stage already committed
+    with connect_test() as other:
+        assert one(other, "SELECT count(*) FROM wh.fact_measurement_hourly") == 48
+        assert (
+            one(other, "SELECT status FROM ops.batch_manifest WHERE batch_id = %s", bid)
+            == "published"
+        )

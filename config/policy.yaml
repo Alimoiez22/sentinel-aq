@@ -1,0 +1,41 @@
+# Deterministic recovery policy (PROJECT_BRIEF §12). NO LLM in the decision path.
+# failure_class -> ONE allow-listed, bounded action, or escalate. Every decision logs
+# its policy_rule_id. Validated by src/sentinel/recovery.py.
+version: 1
+classifier_version: clf-1
+
+# Actions the engine may take on its own. Anything else must escalate.
+allowed_actions:
+  - retry                    # bounded; transient failures only
+  - resume_from_checkpoint   # rerun only the stages not yet checkpointed
+  - refetch_and_reload       # landing copy differs from the source: download again
+  - bounded_backfill         # fetch a missing day from the source (max_days bounded)
+  - wait_and_recheck         # late file within its grace window
+  - skip_duplicate           # identical bytes already registered (no-op)
+  - apply_revision           # new upstream version: supersede, replay, diff
+  - block_publication        # keep a location-day unpublished
+
+# Never automatic (escalate with evidence + RUNBOOK section instead).
+never_automatic:
+  - accept_unknown_schema
+  - invent_unit_conversion
+  - shift_timestamps
+  - edit_sql_or_models
+  - delete_raw_data
+  - disable_tests
+  - change_thresholds
+
+rules:
+  - {id: P01, failure_class: transient_db,       action: retry,                  max_attempts: 3, backoff_s: 1.0, risk: low,    verify: true, runbook: "RB-01"}
+  - {id: P02, failure_class: process_crash,      action: resume_from_checkpoint, max_attempts: 2, backoff_s: 0.0, risk: low,    verify: true, runbook: "RB-02"}
+  - {id: P03, failure_class: transfer_corruption, action: refetch_and_reload,    max_attempts: 2, backoff_s: 1.0, risk: low,    verify: true, runbook: "RB-03"}
+  - {id: P04, failure_class: missing_file,       action: bounded_backfill,       max_attempts: 1, backoff_s: 0.0, risk: medium, verify: true, runbook: "RB-04", max_days: 3}
+  - {id: P05, failure_class: late_file,          action: wait_and_recheck,       max_attempts: 3, backoff_s: 0.0, risk: low,    verify: true, runbook: "RB-05"}
+  - {id: P06, failure_class: revision,           action: apply_revision,         max_attempts: 1, backoff_s: 0.0, risk: low,    verify: true, runbook: "RB-06"}
+  - {id: P07, failure_class: rows_over_threshold, action: block_publication,     max_attempts: 1, backoff_s: 0.0, risk: low,    verify: true, runbook: "RB-07", escalate: true}
+  - {id: P08, failure_class: unknown_schema,     action: escalate,               max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-08"}
+  - {id: P09, failure_class: unknown_unit,       action: escalate,               max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-09"}
+  - {id: P10, failure_class: timezone_offset,    action: escalate,               max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-10"}
+  - {id: P11, failure_class: source_unreadable,  action: escalate,               max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-11"}
+  - {id: P12, failure_class: verification_failed, action: escalate,              max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-12"}
+  - {id: P99, failure_class: unknown,            action: escalate,               max_attempts: 0, backoff_s: 0.0, risk: high,   verify: false, runbook: "RB-99"}

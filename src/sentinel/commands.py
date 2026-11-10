@@ -36,6 +36,12 @@ def add_parsers(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> Non
     r.add_argument("--landing", type=Path, default=Path("data/landing_drop"))
     sub.add_parser("golden", help="rebuild the golden schema from the latest revisions")
     sub.add_parser("reconcile", help="compare published tables with golden (exit 1 if different)")
+    e = sub.add_parser("experiment", help="Track A: faults x modes x seeds -> results.csv")
+    e.add_argument("--config", type=Path, default=Path("config/experiments.yaml"))
+    t = sub.add_parser("trial", help="run one trial and print its result (debugging)")
+    t.add_argument("--fault", required=True)
+    t.add_argument("--mode", default="guarded")
+    t.add_argument("--seed", type=int, default=1)
 
 
 def _ids(text: str | None, default: list[int]) -> list[int]:
@@ -44,6 +50,31 @@ def _ids(text: str | None, default: list[int]) -> list[int]:
 
 def handle(args: argparse.Namespace, scope: Scope) -> int:
     """Run one pipeline command."""
+    if args.command == "experiment":
+        from sentinel.experiments import run_all
+
+        print(run_all(args.config))
+        return 0
+    if args.command == "trial":
+        import tempfile
+        from datetime import datetime
+
+        from sentinel.experiments import clean_dataset, connect_exp, run_trial
+
+        with connect_exp() as c:
+            db.migrate(c)
+        with tempfile.TemporaryDirectory() as tmp:
+            res = run_trial(
+                args.fault,
+                args.mode,
+                args.seed,
+                clean_dataset(),
+                datetime.fromisoformat("2025-11-07T00:00:00+00:00"),
+                0.0,
+                Path(tmp),
+            )
+        print(json.dumps(asdict(res), default=str, indent=1))
+        return 0
     if args.command == "migrate":
         with db.connect() if not args.db else _connect_to(args.db) as conn:
             applied = db.migrate(conn)
@@ -89,4 +120,4 @@ def _connect_to(dbname: str):  # type: ignore[no-untyped-def]
 
     from sentinel.settings import get_settings
 
-    return psycopg.connect(get_settings().conninfo(dbname=dbname))
+    return psycopg.connect(get_settings().conninfo(dbname=dbname), autocommit=True)

@@ -125,6 +125,18 @@ snapshot:
 test-network:
 	$(RUN_NODB) pytest -p no:cacheprovider -m network
 
+## experiment: Track A, every fault x automated mode x seed -> experiments/results/
+experiment: up
+	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=ERROR sentinel experiment"
+
+## golden: rebuild the golden schema from the latest raw revisions
+golden: up
+	$(RUN_APP) sentinel golden
+
+## reconcile: compare published tables with golden (exit 1 if they differ)
+reconcile: up
+	$(RUN_APP) sentinel reconcile
+
 ## demo: end-to-end demo (available from M8)
 demo:
 	@echo "make demo is implemented in M8 (pipeline + injected fault + revision)."

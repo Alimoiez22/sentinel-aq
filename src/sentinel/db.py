@@ -23,8 +23,14 @@ class MigrationChangedError(RuntimeError):
     """An already-applied migration file has different content now."""
 
 
-def connect(autocommit: bool = False) -> psycopg.Connection[tuple[object, ...]]:
-    """New connection as the pipeline role."""
+def connect(autocommit: bool = True) -> psycopg.Connection[tuple[object, ...]]:
+    """New connection as the pipeline role.
+
+    Autocommit is the default ON PURPOSE (ADR-015): each pipeline stage opens its own
+    `with conn.transaction()`. On a non-autocommit connection the first plain SELECT
+    starts an implicit transaction and every later `conn.transaction()` becomes a mere
+    SAVEPOINT inside it, so nothing is committed until the connection commits.
+    """
     return psycopg.connect(get_settings().conninfo(), autocommit=autocommit, connect_timeout=10)
 
 

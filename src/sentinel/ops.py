@@ -128,7 +128,8 @@ def run_landing(
         reg = pipe.register(conn, key, path.read_bytes(), arrival)
         summary.registered[reg.outcome] = summary.registered.get(reg.outcome, 0) + 1
         touched.add((loc, d))
-    for loc, d in sorted(touched):
+    days = sorted(touched)
+    for i, (loc, d) in enumerate(days):
         batch_id = pipe.current_batch(conn, loc, d)
         if batch_id is None:
             continue
@@ -136,17 +137,33 @@ def run_landing(
             ok = pipe.process(conn, batch_id)
             summary.processed.append((loc, d, batch_id, ok))
         except Exception as exc:
-            if conn.info.transaction_status != 0 and not conn.closed:
+            dead = conn.closed or conn.broken
+            if not dead and conn.info.transaction_status != 0:
                 conn.rollback()
             if raise_errors:
                 raise
-            summary.errors.append(
-                {
-                    "location_id": loc,
-                    "source_date": d.isoformat(),
-                    "batch_id": batch_id,
-                    "error": type(exc).__name__,
-                    "message": str(exc)[:500],
-                }
-            )
+            summary.errors.append(_error(loc, d, batch_id, exc))
+            if dead:
+                # Every later location-day would fail the same way on this connection:
+                # record them as skipped by the same (transient) cause, not as unknown.
+                for loc2, d2 in days[i + 1 :]:
+                    summary.errors.append(_error(loc2, d2, None, exc, skipped=True))
+                break
     return summary
+
+
+def _error(
+    loc: int, d: date, batch_id: int | None, exc: BaseException, skipped: bool = False
+) -> dict[str, Any]:
+    """Run-error evidence. `transient` uses the exception HIERARCHY: psycopg raises
+    subclasses such as AdminShutdown (SQLSTATE 57P01) for a killed connection."""
+    import psycopg
+
+    return {
+        "location_id": loc, "source_date": d.isoformat(), "batch_id": batch_id,
+        "error": type(exc).__name__, "message": str(exc)[:500],
+        "sqlstate": getattr(exc, "sqlstate", None),
+        "transient": isinstance(exc, psycopg.OperationalError | psycopg.InterfaceError
+                                | ConnectionError | TimeoutError),
+        "skipped_after_connection_loss": skipped,
+    }  # fmt: skip

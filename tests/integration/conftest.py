@@ -22,7 +22,7 @@ NOW = datetime(2026, 1, 1, tzinfo=UTC)  # fixed processing time: results do not 
 
 
 def connect_test() -> psycopg.Connection[tuple[object, ...]]:
-    return psycopg.connect(get_settings().conninfo(dbname="warehouse_test"))
+    return psycopg.connect(get_settings().conninfo(dbname="warehouse_test"), autocommit=True)
 
 
 @pytest.fixture(scope="session")
