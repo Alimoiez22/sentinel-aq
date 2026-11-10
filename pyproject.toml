@@ -15,6 +15,7 @@ dependencies = [
     "pydantic-settings>=2.16,<3",
     "pyyaml>=6.0,<7",
     "structlog>=26.1,<27",
+    "tzdata>=2026.6",
     "dbt-core>=1.12,<1.13",
     "dbt-postgres>=1.11,<1.12",
 ]
@@ -64,4 +65,5 @@ testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 markers = [
     "integration: needs the PostgreSQL service from docker compose",
+    "network: talks to the real OpenAQ bucket; excluded from make test and CI",
 ]

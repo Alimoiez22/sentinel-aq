@@ -24,6 +24,18 @@
 
 **Figures/tables to make later:** none for M0.
 
+## M1 — discovery, fetch, snapshots, coverage (in progress, 2026-11-11)
+
+- Built and tested offline: archive client, OpenAQ API client, raw store, fetch,
+  snapshot, coverage. `make test`: 80 passed (5 integration, 75 unit), 1 network test
+  excluded.
+- `make test-network`: 1 passed. The real bucket listed 31 files for location 2178,
+  Jan 2024, and the downloaded file has a known header variant.
+- Real coverage numbers: **not measured yet**. `make discover` needs OPENAQ_API_KEY.
+- Possible table: per-location coverage (`results/m1_coverage_summary.md`, generated).
+- Possible discussion point: why snapshots compare metadata and then confirm with
+  hashes (ADR-012), and what that misses.
+
 **Open points for the author:**
 - Review ADR-001…009 and mark each accepted or changed.
 - The CI workflow is written but has not run (no GitHub remote yet).

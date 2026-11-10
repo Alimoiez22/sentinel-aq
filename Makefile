@@ -3,6 +3,8 @@
 
 COMPOSE = docker compose
 RUN_APP = $(COMPOSE) run --rm app
+# For commands that do not need the database (M1 discovery, fetch, snapshot).
+RUN_NODB = $(COMPOSE) run --rm --no-deps app
 
 # Recipes need a POSIX shell. On Windows, make falls back to cmd.exe when no `sh` is on
 # PATH (e.g. when run from PowerShell). Under cmd.exe a shell-based safety check once
@@ -13,6 +15,7 @@ $(error This Makefile needs a POSIX shell. Run make from Git Bash or WSL, not Po
 endif
 
 .PHONY: help setup build up up-airflow down status logs psql check-db fixtures \
+        discover coverage fetch coverage-hours snapshot test-network \
         lint fmt typecheck test test-unit test-integration demo clean destroy
 
 ## help: list the targets
@@ -75,7 +78,7 @@ typecheck:
 
 ## test-unit: unit tests only (no database needed)
 test-unit:
-	$(COMPOSE) run --rm --no-deps app pytest -p no:cacheprovider -m "not integration"
+	$(COMPOSE) run --rm --no-deps app pytest -p no:cacheprovider -m "not integration and not network"
 
 ## test-integration: tests against the Compose database
 test-integration: up
@@ -83,7 +86,36 @@ test-integration: up
 
 ## test: lint + types + all tests. A milestone is done only when this passes.
 test: up
-	$(RUN_APP) sh -c "ruff check . && ruff format --check . && mypy && pytest -p no:cacheprovider"
+	$(RUN_APP) sh -c "ruff check . && ruff format --check . && mypy && pytest -p no:cacheprovider -m 'not network'"
+
+## discover: list OpenAQ locations of the scope country -> results/m1_locations.csv (needs OPENAQ_API_KEY)
+discover:
+	$(RUN_NODB) sentinel discover
+
+## coverage: S3 listings for candidates, then the summary report (LAHORE_ONLY=yes to narrow)
+coverage:
+	$(RUN_NODB) sentinel coverage-listing $(if $(filter yes,$(LAHORE_ONLY)),--lahore-only,)
+	$(RUN_NODB) sentinel coverage-report
+
+## fetch: plan downloads for LOCATIONS="id id"; add CONFIRM=yes to download
+fetch:
+ifndef LOCATIONS
+	$(error Usage: make fetch LOCATIONS="123 456" [CONFIRM=yes])
+endif
+	$(RUN_NODB) sentinel fetch --locations "$(LOCATIONS)" $(if $(filter yes,$(CONFIRM)),--confirm,)
+
+## coverage-hours: hours per day from fetched files, then the summary report
+coverage-hours:
+	$(RUN_NODB) sentinel coverage-hours
+	$(RUN_NODB) sentinel coverage-report
+
+## snapshot: Track B daily snapshot of config/scope.yaml snapshot_locations
+snapshot:
+	$(RUN_NODB) sentinel snapshot
+
+## test-network: smoke test against the real OpenAQ bucket (not part of make test)
+test-network:
+	$(RUN_NODB) pytest -p no:cacheprovider -m network
 
 ## demo: end-to-end demo (available from M8)
 demo:

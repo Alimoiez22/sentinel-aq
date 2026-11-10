@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
         default="INFO", alias="SENTINEL_LOG_LEVEL"
     )
+    # Needed only by `sentinel discover`. Empty means "not configured".
+    openaq_api_key: SecretStr = Field(default=SecretStr(""), alias="OPENAQ_API_KEY")
 
     def conninfo(self) -> str:
         """Return a libpq connection string. The password is never logged."""

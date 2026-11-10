@@ -143,3 +143,71 @@ for accepted decisions are rewritten by the author in his own words.
   (e.g. experiment resets in M11) must use a make-level guard and must never touch
   `data/raw` (rule 8). The deleted volumes were recreated by `make test` and
   `make up-airflow`, which also showed that the init path works on an empty volume.
+
+## ADR-010 — Read the archive over plain HTTPS, without an AWS SDK
+- **Date:** 2026-11-11 · **Milestone:** M1 · **Status:** proposed by Claude
+- **Context.** We need two operations on a public bucket: list a prefix and download an
+  object. The R probe showed both work anonymously over HTTPS.
+- **Options.** (a) boto3 with unsigned requests. (b) The AWS CLI with `--no-sign-request`.
+  (c) Python's standard `urllib` calling ListObjectsV2 and GET directly.
+- **Decision.** (c), in `sentinel/openaq/archive.py` and `sentinel/http.py`.
+- **Consequences.** No extra dependency to pin, and the HTTP layer is small enough to
+  test against an in-process fake server (pagination, 5xx retry, 429 wait, no retry on
+  404). Retries are bounded: at most 5 attempts with exponential backoff, and permanent
+  errors (4xx except 429) are never retried. We parse S3's XML ourselves; the parser is
+  tested on a real response. Checked on the real bucket by `make test-network`.
+
+## ADR-011 — Content-addressed raw store, latest-version landing mirror, append-only index
+- **Date:** 2026-11-11 · **Milestone:** M1 · **Status:** proposed by Claude
+- **Context.** The bucket keeps no old versions (RESEARCH §5.2). A patched file replaces
+  the old one, so the old bytes exist only if we kept them. M6 needs both versions to
+  compute old-vs-new differences.
+- **Decision.**
+  - `data/raw/sha256/ab/<sha256>.csv.gz`: every version we ever downloaded, named by
+    its hash. It is written once, via a temp file and an atomic rename, set read-only,
+    and re-verified on every read.
+  - `data/landing_drop/<archive key>`: the latest version only, the inbox for M2.
+  - `data/raw/index.csv`: an append-only list of (key, ETag) → sha256. It makes fetching
+    idempotent (a version already stored is never downloaded again) and resumable (one
+    row per file, written as soon as the file is stored).
+  - A download whose byte count differs from the listing is rejected before anything
+    is written.
+- **Consequences.** Revisions keep both versions automatically. Disk use grows with
+  revisions, which is small for daily files of a few kB. Nothing in `data/raw` is ever
+  deleted (rule 8).
+
+## ADR-012 — Snapshots detect changes by ETag, size and LastModified; SHA-256 confirms
+- **Date:** 2026-11-11 · **Milestone:** M1 · **Status:** proposed by Claude
+- **Context.** Track B must find real revisions. Hashing every file every day would mean
+  downloading everything daily, which is not possible on this connection (ADR-008).
+- **Options.** (a) Download and hash everything each day. (b) Compare listing metadata,
+  then download only what changed.
+- **Decision.** (b). A key counts as changed if its ETag, size or LastModified differs
+  from the previous snapshot. Changed and new versions are downloaded and hashed, and
+  `changes.csv` records the old and new SHA-256. A snapshot is written to a hidden temp
+  directory and renamed when complete, so a crash never leaves a partial snapshot for
+  the next run to compare against. An existing run is never overwritten.
+- **Consequences.** A daily run costs one listing request per location-month plus the
+  changed files. Risk: a change that alters no metadata would be missed. That is
+  unlikely, since S3 sets LastModified on every write, but it is listed as a threat to
+  validity for Track B. Property tests check that an unchanged listing yields no diff
+  and that the diff does not depend on listing order.
+
+## ADR-013 — Two-level coverage: listing first, hours only for a shortlist
+- **Date:** 2026-11-11 · **Milestone:** M1 · **Status:** proposed by Claude
+- **Context.** Hours per day need the file contents, and downloading every Pakistani
+  location for two years over a ~50–200 KB/s link is too slow and mostly wasted.
+- **Decision.** `make coverage` uses listings only: days with a file, sizes, and arrival
+  lag. `make fetch` prints the planned download size, and downloads only with
+  `CONFIRM=yes`. Hours per day (`make coverage-hours`) are computed only for fetched
+  locations. The report writes "not measured" where hours were not computed.
+  - A day counts towards ">=18h" with at least 18 distinct hourly timestamps for the
+    parameter, from any of the location's sensors for it (EU 2008/50/EC).
+  - "Winter" is Nov–Feb, the smog season. This is a project choice, not a cited
+    standard.
+  - Only the two known header variants are read. Any other header is reported with its
+    text, never guessed.
+- **Consequences.** The location choice is made with explicit denominators. Hours-based
+  numbers exist only for the shortlist. Arrival lag uses LastModified, which for a
+  patched file is the patch time, so the lag of revised files is overstated. This is
+  noted in the report.

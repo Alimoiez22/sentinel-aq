@@ -56,4 +56,4 @@ jobs:
         run: uv run mypy
 
       - name: Tests (unit + integration)
-        run: uv run pytest -p no:cacheprovider
+        run: uv run pytest -p no:cacheprovider -m "not network"

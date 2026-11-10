@@ -1,0 +1,27 @@
+# Scope of the study. Validated by src/sentinel/config.py (pydantic); unknown keys fail.
+version: 1
+
+country_iso: PK
+
+# Reference point for "distance to Lahore", used only to rank candidate locations.
+# Approximate city centre (WGS 84), not a measurement site.
+lahore:
+  latitude: 31.5204
+  longitude: 74.3587
+  radius_km: 25
+
+# Source dates (local calendar days of each location). end: null means "today minus
+# 4 days", because files are written about 72 h after the local day ends (RESEARCH §5).
+date_range:
+  start: 2024-01-01
+  end: null
+
+parameters: [pm25, pm10]
+
+# Chosen study locations (OpenAQ location ids). Empty until the author decides after
+# the M1 coverage report. M2 onwards loads only these.
+locations: []
+
+# Locations recorded by the daily snapshot (Track B). Filled after discovery with every
+# Lahore-area PM location, so revision history starts before the final choice.
+snapshot_locations: []

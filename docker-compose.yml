@@ -86,6 +86,8 @@ services:
       SENTINEL_DB_PASSWORD: ${SENTINEL_DB_PASSWORD}
       SENTINEL_DB_NAME: ${SENTINEL_DB_NAME}
       SENTINEL_LOG_LEVEL: ${SENTINEL_LOG_LEVEL:-INFO}
+      # Only `sentinel discover` uses it; never logged (SecretStr).
+      OPENAQ_API_KEY: ${OPENAQ_API_KEY:-}
     volumes:
       # The repo is mounted, so code edits need no rebuild. The venv lives in /opt/venv.
       - .:/workspace
