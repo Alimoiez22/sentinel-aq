@@ -38,7 +38,11 @@
 
 **Open points for the author:**
 - Review ADR-001…019 and mark each accepted or changed (ADR-014 and ADR-018 change the brief).
-- The CI workflow is written but has not run (no GitHub remote yet).
+- CI: private repo github.com/Alimoiez22/sentinel-aq. The first run (42973212590,
+  manual dispatch on `main`, commit f172582) passed: lint, mypy, 134 tests (1 network
+  test deselected), on ubuntu-24.04 with the same PostGIS digest as Compose. Note:
+  GitHub did not start runs for the initial pushes, so the workflow now also allows
+  manual runs.
 
 ## M2-M13 — pipeline, recovery, experiments (2026-11-11)
 
