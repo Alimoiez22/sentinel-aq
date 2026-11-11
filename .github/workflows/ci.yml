@@ -58,3 +58,17 @@ jobs:
 
       - name: Tests (unit + integration)
         run: uv run pytest -p no:cacheprovider -m "not network"
+
+  # Definition of done (PROJECT_BRIEF §17), checked on a clean machine: a fresh clone,
+  # `make setup && make demo`, exactly as a new user would run it.
+  fresh-clone-demo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: make setup (creates .env from .env.example, builds all images)
+        run: make setup
+      - name: make demo (fault + revision -> verified recovery, equal to golden)
+        run: make demo | tee demo.log
+      - name: The demo must end in a verified recovery
+        run: grep -q "RESULT: verified recovery, outputs equal golden" demo.log
