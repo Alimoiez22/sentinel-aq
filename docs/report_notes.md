@@ -42,7 +42,11 @@
   manual dispatch on `main`, commit f172582) passed: lint, mypy, 134 tests (1 network
   test deselected), on ubuntu-24.04 with the same PostGIS digest as Compose. Note:
   GitHub did not start runs for the initial pushes, so the workflow now also allows
-  manual runs.
+  manual runs. Push events still started no runs during this session; runs were
+  started by hand.
+- Fresh-clone check (definition of done): CI job `fresh-clone-demo`, run 42985928208,
+  commit 9299589, on a clean ubuntu-24.04 machine. `make setup && make demo` passed and
+  ended in "verified recovery, outputs equal golden".
 
 ## M2-M13 — pipeline, recovery, experiments (2026-11-11)
 
