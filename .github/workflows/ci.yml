@@ -71,4 +71,5 @@ jobs:
       - name: make demo (fault + revision -> verified recovery, equal to golden)
         run: make demo | tee demo.log
       - name: The demo must end in a verified recovery
-        run: grep -q "RESULT: verified recovery, outputs equal golden" demo.log
+        run: |
+          grep -q "RESULT: verified recovery, outputs equal golden" demo.log
