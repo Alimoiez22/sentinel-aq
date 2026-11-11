@@ -255,3 +255,12 @@ def test_each_stage_is_committed_and_visible_to_other_sessions(conn: Conn, pipe:
             one(other, "SELECT status FROM ops.batch_manifest WHERE batch_id = %s", bid)
             == "published"
         )
+
+
+def test_dashboard_renders_views(conn: Conn, pipe: Pipeline) -> None:
+    from sentinel.dashboard import render
+
+    load_all(conn, pipe)
+    page = render(conn, "test")
+    assert "warehouse_test" in page and "Publication status" in page
+    assert "<td>complete</td>" in page  # a value from ops.v_publication

@@ -137,9 +137,36 @@ golden: up
 reconcile: up
 	$(RUN_APP) sentinel reconcile
 
-## demo: end-to-end demo (available from M8)
-demo:
-	@echo "make demo is implemented in M8 (pipeline + injected fault + revision)."
+## demo: 3-day guarded run with an injected fault and a revision (warehouse_exp)
+demo: up db-aux
+	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=ERROR sentinel demo"
+
+## analyse: summary tables and figures from experiments/results/results.csv
+analyse:
+	$(RUN_NODB) sentinel analyse
+
+## revisions-report: Track B report from data/snapshots and the live warehouse
+revisions-report: up
+	$(RUN_APP) sentinel revisions-report
+
+## dashboard: static HTML over the ops views (DB=warehouse_exp for experiment data)
+dashboard: up
+	$(RUN_APP) sentinel dashboard $(if $(DB),--db $(DB),)
+
+## manual-start: manual-mode trial, e.g. make manual-start FAULT=F2 SEED=11 OPERATOR=ali
+manual-start: up db-aux
+ifndef OPERATOR
+	$(error Usage: make manual-start FAULT=F2 SEED=11 OPERATOR=<name>)
+endif
+	$(RUN_APP) sentinel manual-start --fault $(FAULT) --seed $(SEED) --operator $(OPERATOR)
+
+## manual-shell: shell on warehouse_exp for the operator of a manual trial
+manual-shell: up
+	$(COMPOSE) run --rm -e SENTINEL_DB_NAME=warehouse_exp app bash
+
+## manual-finish: stop the clock and record the manual trial
+manual-finish: up
+	$(RUN_APP) sentinel manual-finish
 
 ## clean: stop containers and remove local caches; never touches data/ or volumes
 clean: down

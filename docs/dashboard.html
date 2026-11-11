@@ -1,0 +1,46 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>Sentinel-AQ operations</title><style>
+:root{--bg:#fff;--fg:#1d1d1f;--mut:#666;--line:#ddd}
+@media (prefers-color-scheme:dark){:root{--bg:#141414;--fg:#eee;--mut:#aaa;--line:#333}}
+body{font:14px system-ui,sans-serif;margin:16px;background:var(--bg);color:var(--fg)}
+table{border-collapse:collapse;margin:8px 0 24px;display:block;overflow-x:auto}
+td,th{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
+th{background:rgba(127,127,127,.12)}p.m{color:var(--mut)}</style></head><body>
+<h1>Sentinel-AQ operations</h1>
+<p class='m'>Database <code>warehouse_exp</code>, generated 2026-11-11T06:05:00+00:00 by <code>make dashboard</code>.</p>
+<h2>Publication status</h2>
+<table><tr><th>status</th><th>location_days</th><th>first_day</th><th>last_day</th></tr>
+<tr><td>complete</td><td>10</td><td>2025-11-01</td><td>2025-11-03</td></tr>
+<tr><td>revised</td><td>2</td><td>2025-11-01</td><td>2025-11-01</td></tr>
+</table>
+<h2>Incidents and decisions (latest 50)</h2>
+<table><tr><th>incident_id</th><th>detected_at</th><th>location_id</th><th>source_date</th><th>failure_class</th><th>decision</th><th>policy_rule_id</th><th>action</th><th>attempts</th><th>outcome</th><th>escalated</th><th>time_to_verified_recovery_s</th><th>origin</th></tr>
+<tr><td>2</td><td>2026-11-11 05:38:02.907109+00:00</td><td>99000002</td><td>2025-11-01</td><td>revision</td><td>act</td><td>P06</td><td>apply_revision</td><td>1</td><td>recovered</td><td>False</td><td>0.03691396599970176</td><td>injected</td></tr>
+<tr><td>1</td><td>2026-11-11 05:38:02.376765+00:00</td><td>99000001</td><td>2025-11-01</td><td>transfer_corruption</td><td>act</td><td>P03</td><td>refetch_and_reload</td><td>1</td><td>recovered</td><td>False</td><td>0.18121735099975922</td><td>injected</td></tr>
+</table>
+<h2>Recovery times by failure class</h2>
+<table><tr><th>failure_class</th><th>incidents</th><th>recovered</th><th>escalated</th><th>median_ttr_s</th></tr>
+<tr><td>revision</td><td>1</td><td>1</td><td>0</td><td>0.03691396599970176</td></tr>
+<tr><td>transfer_corruption</td><td>1</td><td>1</td><td>0</td><td>0.18121735099975922</td></tr>
+</table>
+<h2>Quality rule hits</h2>
+<table><tr><th>rule_id</th><th>action</th><th>batches</th><th>rows_hit</th><th>pct_of_rows</th></tr>
+<tr><td>Q14_spike_hampel</td><td>flag</td><td>7</td><td>19</td><td>5.65</td></tr>
+</table>
+<h2>Revision history</h2>
+<table><tr><th>location_id</th><th>source_date</th><th>old_batch_id</th><th>new_batch_id</th><th>change</th><th>rows</th><th>mean_abs_change</th></tr>
+<tr><td>99000002</td><td>2025-11-01</td><td>4</td><td>8</td><td>value_changed</td><td>6</td><td>39.550</td></tr>
+</table>
+<h2>Batch timeline (latest 50)</h2>
+<table><tr><th>batch_id</th><th>location_id</th><th>source_date</th><th>revision_no</th><th>status</th><th>header_variant</th><th>raw_row_count</th><th>arrival_ts</th><th>stages_done</th></tr>
+<tr><td>8</td><td>99000002</td><td>2025-11-01</td><td>1</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:02.567535+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>7</td><td>99000001</td><td>2025-11-01</td><td>1</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:02.378458+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>6</td><td>99000002</td><td>2025-11-03</td><td>0</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572165+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>5</td><td>99000002</td><td>2025-11-02</td><td>0</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572087+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>4</td><td>99000002</td><td>2025-11-01</td><td>0</td><td>superseded</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572001+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>3</td><td>99000001</td><td>2025-11-03</td><td>0</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:01.571465+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>2</td><td>99000001</td><td>2025-11-02</td><td>0</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:01.571322+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
+<tr><td>1</td><td>99000001</td><td>2025-11-01</td><td>0</td><td>rejected</td><td></td><td></td><td>2026-11-11 05:38:01.571203+00:00</td><td></td></tr>
+</table>
+</body></html>

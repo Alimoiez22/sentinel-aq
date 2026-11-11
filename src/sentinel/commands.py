@@ -34,8 +34,26 @@ def add_parsers(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> Non
     r.add_argument("--start", type=date.fromisoformat)
     r.add_argument("--end", type=date.fromisoformat)
     r.add_argument("--landing", type=Path, default=Path("data/landing_drop"))
+    r.add_argument("--raw", type=Path, default=Path("data/raw"), help="raw store (manual trials)")
+    sub.add_parser("revisions-report", help="Track B report from snapshots + live warehouse")
+    sub.add_parser("analyse", help="summaries and figures from experiments/results/results.csv")
+    dash = sub.add_parser("dashboard", help="static HTML dashboard over the ops views")
+    dash.add_argument("--db", default=None, help="database (default: SENTINEL_DB_NAME)")
+    dash.add_argument("--out", type=Path, default=Path("docs/dashboard.html"))
+    ms = sub.add_parser("manual-start", help="set up a manual-mode trial and start the clock")
+    ms.add_argument("--fault", required=True)
+    ms.add_argument("--seed", type=int, required=True)
+    ms.add_argument("--operator", required=True)
+    sub.add_parser("manual-finish", help="stop the clock, compare with golden, record")
+    sub.add_parser("demo", help="3-day run with an injected fault and a revision")
     sub.add_parser("golden", help="rebuild the golden schema from the latest revisions")
     sub.add_parser("reconcile", help="compare published tables with golden (exit 1 if different)")
+    d = sub.add_parser("daily", help="guarded run over the last 14 days of the scope")
+    d.add_argument("--start", type=date.fromisoformat)
+    d.add_argument("--end", type=date.fromisoformat)
+    b = sub.add_parser("backfill", help="process landing files for a date range (no actions)")
+    b.add_argument("--start", type=date.fromisoformat, required=True)
+    b.add_argument("--end", type=date.fromisoformat, required=True)
     e = sub.add_parser("experiment", help="Track A: faults x modes x seeds -> results.csv")
     e.add_argument("--config", type=Path, default=Path("config/experiments.yaml"))
     t = sub.add_parser("trial", help="run one trial and print its result (debugging)")
@@ -50,6 +68,47 @@ def _ids(text: str | None, default: list[int]) -> list[int]:
 
 def handle(args: argparse.Namespace, scope: Scope) -> int:
     """Run one pipeline command."""
+    if args.command == "analyse":
+        from sentinel.analysis import analyse
+
+        print(json.dumps([str(p) for p in analyse()]))
+        return 0
+    if args.command == "manual-start":
+        from sentinel.manual import start
+
+        print(json.dumps(start(args.fault, args.seed, args.operator), indent=1))
+        return 0
+    if args.command == "manual-finish":
+        from sentinel.manual import finish
+
+        print(json.dumps(finish(), indent=1, default=str))
+        return 0
+    if args.command == "demo":
+        from sentinel.demo import print_report, run
+
+        out = run()
+        print_report(out)
+        return 0 if out["golden_equal"] else 1
+    if args.command == "dashboard":
+        from sentinel.dashboard import write
+
+        with _connect_to(args.db) if args.db else db.connect() as conn:
+            print(write(conn, args.out))
+        return 0
+    if args.command in ("daily", "backfill"):
+        from sentinel import production
+
+        if not scope.locations:
+            print("config/scope.yaml has no locations yet (choose them after M1)")
+            return 2
+        pipe = make_pipeline(scope)
+        out = (
+            production.daily(scope, pipe, args.start, args.end)
+            if args.command == "daily"
+            else production.backfill(scope, pipe, args.start, args.end)
+        )
+        print(json.dumps(out, default=str))
+        return 0 if not out.get("errors") and not out.get("escalated") else 1
     if args.command == "experiment":
         from sentinel.experiments import run_all
 
@@ -90,9 +149,11 @@ def handle(args: argparse.Namespace, scope: Scope) -> int:
             if not ids:
                 print("no locations: set config/scope.yaml locations or pass --locations")
                 return 2
+            pipe = make_pipeline(scope)
+            pipe.store = RawStore(args.raw)
             summary = run_landing(
                 conn,
-                make_pipeline(scope),
+                pipe,
                 args.landing,
                 ids,
                 args.start,
@@ -108,6 +169,10 @@ def handle(args: argparse.Namespace, scope: Scope) -> int:
                     {"location_days": rebuild_golden(conn, pipe, manifest_inputs(conn, pipe))}
                 )
             )
+        elif args.command == "revisions-report":
+            from sentinel.trackb import report
+
+            print(report(conn))
         elif args.command == "reconcile":
             diffs = compare_all(conn)
             print(json.dumps([asdict(d) | {"equal": d.equal} for d in diffs], default=str))

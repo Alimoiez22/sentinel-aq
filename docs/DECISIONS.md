@@ -269,3 +269,37 @@ for accepted decisions are rewritten by the author in his own words.
 - **Consequences.** The checksums and key comparisons in `make reconcile` are exact.
   Limitation: the Hampel and stuck-sensor flags look at one day only (no cross-day
   context). This is listed for LIMITATIONS.
+
+## ADR-018 — Static HTML dashboard over SQL views instead of Grafana or Metabase
+- **Date:** 2026-11-11 · **Milestone:** M12 · **Status:** proposed by Claude
+- **Context.** The brief asks for dashboards in Grafana or Metabase. On this laptop the
+  connection measured about 50–200 KB/s and Docker runs in a 4 GB VM (ADR-008). Either
+  tool would add a multi-hundred-MB image and another long-running service. Project 1
+  shipped a self-contained HTML dashboard successfully.
+- **Decision.** Six SQL views in `ops` (`sql/ddl/006_views.sql`) are the observability
+  layer. `make dashboard` renders them into one static, self-contained
+  `docs/dashboard.html`. `make dashboard DB=warehouse_exp` shows experiment data.
+- **Consequences.** There is no live refresh and no alerting; the page is regenerated
+  on demand. Any BI tool can later read the same views. The figures in `docs/figures/`
+  are SVG files generated without a plotting library, so there is no extra dependency
+  to download.
+
+## ADR-019 — Evaluation design choices made during M11
+- **Date:** 2026-11-11 · **Milestone:** M11 · **Status:** proposed by Claude
+- **Held-out seeds.** clf-1 was revised while developing with seeds 1–3. It was frozen
+  in commit 087feed, and evaluation used seeds 11–15 (different targets and fault
+  parameters). On those 80 guarded trials the classifier was correct in 80/80
+  (`results.csv`, column `classified_correctly`).
+- **`handled_as_expected`.** `recovered_verified` alone rewards a pipeline that blocks bad
+  data silently: retries_only scores 60/75 on it, higher than guarded's 50/75, because
+  guarded escalates by design. The added metric requires correct outputs AND the
+  escalation the fault calls for (FAULTS.md). Both metrics are reported; neither is
+  hidden.
+- **Damage split.** "Wrong" monthly summary rows come only from missing days.
+  `wrong_values_published` (hourly or daily values) is reported separately, and it was
+  0 in every trial.
+- **Bug found by the runner.** Non-autocommit connections turned every stage
+  "transaction" into a savepoint, so nothing committed until the end of the session.
+  Fixed (autocommit connections), with a regression test reading through a second
+  connection. Integration tests had missed it because they read through the same
+  connection.

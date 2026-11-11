@@ -36,6 +36,8 @@ x-airflow-common: &airflow-common
   volumes:
     - ./dags:/opt/airflow/dags:ro
     - airflow_logs:/opt/airflow/logs
+    # Tasks run `sentinel` from the repo root (config/, sql/, data/).
+    - .:/opt/airflow/repo
   depends_on:
     db:
       condition: service_healthy
