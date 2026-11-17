@@ -355,3 +355,26 @@ for accepted decisions are rewritten by the author in his own words.
 - **Consequences.** Blocking means "the delivered data is bad", not "data is missing".
   Tested in `tests/unit/test_quality.py` (codes alone do not block; codes plus 25 % bad
   rows still block). Before/after counts are in docs/report_notes.md.
+
+## ADR-022 — Fault injector v2: series faults act on the published series
+- **Date:** 2026-11-17 · **Milestone:** M9 (found on real data) · **Status:** proposed by Claude
+- **Context.** On real data, guarded mode did not escalate F13 (unit change) in any of
+  its 5 trials. The cause was the injector, not the engine. F13 and F14 mutated rows in
+  FILE order. The synthetic files list PM2.5 first, so every synthetic trial hit PM2.5.
+  The real AirGradient file lists pm1, pm25, relativehumidity, temperature and um003, so
+  every real F13 trial changed only out-of-scope parameters: 0 PM2.5 rows had `ppm`.
+  The fault never manifested in the published series, and "no escalation" was the
+  correct response. The unit test "each fault manifests" passed because it only used
+  synthetic files.
+- **Decision.** F13 and F14 now act on the PM2.5 series in time order (`faults._series`),
+  falling back to all rows when a file has no PM2.5. A regression test uses a
+  multi-parameter, AirGradient-shaped file. F3 and F9 still mutate random rows, and
+  real-data results showed they manifested in every trial (F3 blocked 5/5; F9 was
+  processed as a revision).
+- **What did not change.** Classifier clf-1, the policy and the pipeline are untouched.
+  Only the test harness changed.
+- **Consequences.** Both experiments were rerun on commit 4f42feb, and the earlier
+  results files were replaced. The superseded real-data numbers (F13 guarded:
+  outputs 5/5 correct, 0/5 escalated) are recorded here so the change is not hidden.
+  Lesson for the report: a fault catalogue needs "did it manifest" checks on data
+  shaped like production, not only on fixtures.

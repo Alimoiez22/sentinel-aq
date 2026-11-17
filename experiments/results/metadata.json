@@ -1,9 +1,9 @@
 {
-  "utc": "2026-11-10T23:52:18+00:00",
-  "git_commit": "087feed50ce4e0ff71ef798fe5faeb22402aaae9",
+  "utc": "2026-11-17T15:41:46+00:00",
+  "git_commit": "4f42febc18935c0be710bce231de6b34eb9a165c",
   "working_tree_clean": "not checked",
   "python": "3.12.16",
-  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.41",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.41",
   "cpu_count": 8,
   "postgres": "18.6 (Debian 18.6-1.pgdg13+2)",
   "packages": {
@@ -14,7 +14,7 @@
   },
   "config_sha256": {
     "config/policy.yaml": "34689cf2ebc99afa876f5d6fe3754451b8cb88abe17a700439d3e6692f63dd0f",
-    "config/quality_rules.yaml": "9f8b9f28387b85de3ef9a2b43f569407c5d4af44cae0b2daaf8af99733514703",
+    "config/quality_rules.yaml": "5feeccf406044e320fa0349cd431fe7fe9d41af49cae3f7bea0ff2beda69e416",
     "config/experiments.yaml": "bb0256faf0c801568557c5de68a68d86412a0e079c845565809bff12150ec2e5",
     "config/guidelines.yaml": "5c9b7f0261c5296e022b16b41ac83d199735cd6382ed93d52e55c740ed959548",
     "sql/marts/refresh_daily.sql": "39e9c0b9f9121606b295ae78ed811467564b71a6f4509872ba53b08067265c46"
@@ -61,6 +61,15 @@
     "backoff_scale": 0.0
   },
   "n_trials": 160,
-  "total_wall_s": 304.6,
-  "manual_mode": "not run: needs a human operator (make manual-trial)"
+  "total_wall_s": 235.6,
+  "manual_mode": "not run: needs a human operator (make manual-trial)",
+  "dataset_keys": [
+    "records/csv.gz/locationid=99000001/year=2025/month=11/location-99000001-20251101.csv.gz",
+    "records/csv.gz/locationid=99000001/year=2025/month=11/location-99000001-20251102.csv.gz",
+    "records/csv.gz/locationid=99000001/year=2025/month=11/location-99000001-20251103.csv.gz",
+    "records/csv.gz/locationid=99000002/year=2025/month=11/location-99000002-20251101.csv.gz",
+    "records/csv.gz/locationid=99000002/year=2025/month=11/location-99000002-20251102.csv.gz",
+    "records/csv.gz/locationid=99000002/year=2025/month=11/location-99000002-20251103.csv.gz"
+  ],
+  "run0_utc": "2025-11-07T00:00:00+00:00"
 }

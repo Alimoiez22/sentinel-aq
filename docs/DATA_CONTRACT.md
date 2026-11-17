@@ -25,16 +25,23 @@ added, missing or renamed column is an unknown schema and is never guessed (F5).
 | value_raw | value | value |
 
 Provenance of each header: `data/fixtures/HEADERS.md`. Variant A has not been seen in a
-real file yet; M1/M2 on real Lahore files will report which variants occur.
+real file. All 2,437 real Lahore files fetched on 2026-11-17 (locations 8664 and 4568423)
+parsed as variant B.
 
 ## 3. Typed canonical frame (Pandera schema `CANONICAL_SCHEMA`)
 * `ts_utc`: `datetime` parsed as ISO-8601 with offset (`%Y-%m-%dT%H:%M:%S%:z`), then
   converted to UTC. NULL if it does not parse (quarantined by Q01).
 * `utc_offset_s`: the offset written in the file, in seconds (checked by Q08).
 * `value`: float; NULL if missing, not a number, NaN or infinite (quarantined by Q02).
-* OpenAQ hourly stamps are treated as the END of the hour: the real file read on
-  2026-11-05 started at 01:00. This rests on n = 1 file and must be re-checked on
-  real Lahore data (Q06 rule hits will show it).
+* OpenAQ hourly stamps are treated as the END of the hour (01:00 .. 00:00 next day).
+  Checked on real files: location 2178 (2026-11-05), and 8664 and 4568423 (2026-11-17).
+  Across all 2,437 Lahore location-days, rule Q06 (outside local day) did not fire
+  (results/quality_rules_v1_vs_v2_by_rule.csv).
+* Missing-value code: real 8664 files contain `-999.0` for hours with no measurement
+  (7,879 rows). Rules v2 treat it as a missing hour (ADR-021).
+* Cosmetic quirk: the Model Town file's `location` column reads `Model Town-4538361`, a
+  different number from its location id 4568423. The row `location_id` matches the key,
+  so Q09 is not affected.
 
 ## 4. Keys and identity
 * A file is identified by its archive key `records/csv.gz/locationid={id}/year=/month=/

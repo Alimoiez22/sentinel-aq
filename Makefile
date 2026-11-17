@@ -137,6 +137,10 @@ experiment: up
 experiment-real: up
 	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=ERROR sentinel experiment --config config/experiments_real.yaml"
 
+## run: register and process landing files of config/scope.yaml locations (live warehouse)
+run: up
+	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=WARNING sentinel run"
+
 ## lahore-report: Lahore PM2.5 by month and winter, from the verified marts
 lahore-report: up
 	$(RUN_APP) sentinel lahore-report

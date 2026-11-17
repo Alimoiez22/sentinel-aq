@@ -47,7 +47,7 @@
 <rect x="589.1" y="40.0" width="15.6" height="220.0" fill="#4f81bd"><title>F12 guarded: 5/5</title></rect>
 <text x="589.1" y="275" text-anchor="middle">F12</text>
 <rect x="614.6" y="260.0" width="15.6" height="0.0" fill="#c0504d"><title>F13 retries_only: 0/5</title></rect>
-<rect x="632.2" y="260.0" width="15.6" height="0.0" fill="#4f81bd"><title>F13 guarded: 0/5</title></rect>
+<rect x="632.2" y="40.0" width="15.6" height="220.0" fill="#4f81bd"><title>F13 guarded: 5/5</title></rect>
 <text x="632.2" y="275" text-anchor="middle">F13</text>
 <rect x="657.8" y="40.0" width="15.6" height="220.0" fill="#c0504d"><title>F14 retries_only: 5/5</title></rect>
 <rect x="675.3" y="40.0" width="15.6" height="220.0" fill="#4f81bd"><title>F14 guarded: 5/5</title></rect>

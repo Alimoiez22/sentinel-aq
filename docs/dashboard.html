@@ -8,39 +8,80 @@ table{border-collapse:collapse;margin:8px 0 24px;display:block;overflow-x:auto}
 td,th{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
 th{background:rgba(127,127,127,.12)}p.m{color:var(--mut)}</style></head><body>
 <h1>Sentinel-AQ operations</h1>
-<p class='m'>Database <code>warehouse_exp</code>, generated 2026-11-11T06:05:00+00:00 by <code>make dashboard</code>.</p>
+<p class='m'>Database <code>warehouse</code>, generated 2026-11-17T15:50:56+00:00 by <code>make dashboard</code>.</p>
 <h2>Publication status</h2>
 <table><tr><th>status</th><th>location_days</th><th>first_day</th><th>last_day</th></tr>
-<tr><td>complete</td><td>10</td><td>2025-11-01</td><td>2025-11-03</td></tr>
-<tr><td>revised</td><td>2</td><td>2025-11-01</td><td>2025-11-01</td></tr>
+<tr><td>blocked</td><td>16</td><td>2021-06-26</td><td>2024-01-29</td></tr>
+<tr><td>complete</td><td>1952</td><td>2019-05-23</td><td>2026-11-13</td></tr>
+<tr><td>partial</td><td>469</td><td>2019-06-19</td><td>2026-08-22</td></tr>
 </table>
 <h2>Incidents and decisions (latest 50)</h2>
-<table><tr><th>incident_id</th><th>detected_at</th><th>location_id</th><th>source_date</th><th>failure_class</th><th>decision</th><th>policy_rule_id</th><th>action</th><th>attempts</th><th>outcome</th><th>escalated</th><th>time_to_verified_recovery_s</th><th>origin</th></tr>
-<tr><td>2</td><td>2026-11-11 05:38:02.907109+00:00</td><td>99000002</td><td>2025-11-01</td><td>revision</td><td>act</td><td>P06</td><td>apply_revision</td><td>1</td><td>recovered</td><td>False</td><td>0.03691396599970176</td><td>injected</td></tr>
-<tr><td>1</td><td>2026-11-11 05:38:02.376765+00:00</td><td>99000001</td><td>2025-11-01</td><td>transfer_corruption</td><td>act</td><td>P03</td><td>refetch_and_reload</td><td>1</td><td>recovered</td><td>False</td><td>0.18121735099975922</td><td>injected</td></tr>
-</table>
+<p class='m'>No rows.</p>
 <h2>Recovery times by failure class</h2>
-<table><tr><th>failure_class</th><th>incidents</th><th>recovered</th><th>escalated</th><th>median_ttr_s</th></tr>
-<tr><td>revision</td><td>1</td><td>1</td><td>0</td><td>0.03691396599970176</td></tr>
-<tr><td>transfer_corruption</td><td>1</td><td>1</td><td>0</td><td>0.18121735099975922</td></tr>
-</table>
+<p class='m'>No rows.</p>
 <h2>Quality rule hits</h2>
 <table><tr><th>rule_id</th><th>action</th><th>batches</th><th>rows_hit</th><th>pct_of_rows</th></tr>
-<tr><td>Q14_spike_hampel</td><td>flag</td><td>7</td><td>19</td><td>5.65</td></tr>
+<tr><td>B01_reject_rate</td><td>block</td><td>16</td><td>16</td><td>5.13</td></tr>
+<tr><td>Q00_missing_code</td><td>quarantine</td><td>545</td><td>7879</td><td>60.99</td></tr>
+<tr><td>Q03_negative</td><td>quarantine</td><td>19</td><td>228</td><td>59.38</td></tr>
+<tr><td>Q12_high_band</td><td>flag</td><td>186</td><td>650</td><td>14.41</td></tr>
+<tr><td>Q13_stuck</td><td>flag</td><td>7</td><td>133</td><td>79.17</td></tr>
+<tr><td>Q14_spike_hampel</td><td>flag</td><td>1196</td><td>1819</td><td>3.77</td></tr>
+<tr><td>Q16_out_of_scope</td><td>info</td><td>528</td><td>47432</td><td>80.00</td></tr>
 </table>
 <h2>Revision history</h2>
-<table><tr><th>location_id</th><th>source_date</th><th>old_batch_id</th><th>new_batch_id</th><th>change</th><th>rows</th><th>mean_abs_change</th></tr>
-<tr><td>99000002</td><td>2025-11-01</td><td>4</td><td>8</td><td>value_changed</td><td>6</td><td>39.550</td></tr>
-</table>
+<p class='m'>No rows.</p>
 <h2>Batch timeline (latest 50)</h2>
 <table><tr><th>batch_id</th><th>location_id</th><th>source_date</th><th>revision_no</th><th>status</th><th>header_variant</th><th>raw_row_count</th><th>arrival_ts</th><th>stages_done</th></tr>
-<tr><td>8</td><td>99000002</td><td>2025-11-01</td><td>1</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:02.567535+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>7</td><td>99000001</td><td>2025-11-01</td><td>1</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:02.378458+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>6</td><td>99000002</td><td>2025-11-03</td><td>0</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572165+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>5</td><td>99000002</td><td>2025-11-02</td><td>0</td><td>published</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572087+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>4</td><td>99000002</td><td>2025-11-01</td><td>0</td><td>superseded</td><td>B</td><td>48</td><td>2026-11-11 05:38:01.572001+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>3</td><td>99000001</td><td>2025-11-03</td><td>0</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:01.571465+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>2</td><td>99000001</td><td>2025-11-02</td><td>0</td><td>published</td><td>A</td><td>48</td><td>2026-11-11 05:38:01.571322+00:00</td><td>staged,quality,fact,marts,verified</td></tr>
-<tr><td>1</td><td>99000001</td><td>2025-11-01</td><td>0</td><td>rejected</td><td></td><td></td><td>2026-11-11 05:38:01.571203+00:00</td><td></td></tr>
+<tr><td>2437</td><td>4568423</td><td>2026-11-13</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:46.183647+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2436</td><td>4568423</td><td>2026-11-12</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:45.419473+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2435</td><td>4568423</td><td>2026-11-11</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:44.659967+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2434</td><td>4568423</td><td>2026-11-10</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:43.930322+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2433</td><td>4568423</td><td>2026-11-09</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:43.159062+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2432</td><td>4568423</td><td>2026-11-08</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:42.269776+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2431</td><td>4568423</td><td>2026-11-07</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:41.507238+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2430</td><td>4568423</td><td>2026-11-06</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:40.718848+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2429</td><td>4568423</td><td>2026-11-05</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:39.884554+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2428</td><td>4568423</td><td>2026-11-04</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:39.164846+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2427</td><td>4568423</td><td>2026-11-03</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:38.403379+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2426</td><td>4568423</td><td>2026-11-02</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:37.660841+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2425</td><td>4568423</td><td>2026-11-01</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:36.913522+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2424</td><td>4568423</td><td>2026-10-31</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:36.169738+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2423</td><td>4568423</td><td>2026-10-30</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:35.345526+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2422</td><td>4568423</td><td>2026-10-29</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:34.551657+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2421</td><td>4568423</td><td>2026-10-28</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:33.770661+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2420</td><td>4568423</td><td>2026-10-27</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:32.975447+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2419</td><td>4568423</td><td>2026-10-26</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:32.218791+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2418</td><td>4568423</td><td>2026-10-25</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:31.476283+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2417</td><td>4568423</td><td>2026-10-24</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:30.750928+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2416</td><td>4568423</td><td>2026-10-23</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:29.973343+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2415</td><td>4568423</td><td>2026-10-22</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:29.246916+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2414</td><td>4568423</td><td>2026-10-21</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:28.511584+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2413</td><td>4568423</td><td>2026-10-20</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:27.668014+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2412</td><td>4568423</td><td>2026-10-19</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:26.923317+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2411</td><td>4568423</td><td>2026-10-18</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:26.192041+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2410</td><td>4568423</td><td>2026-10-17</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:25.402108+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2409</td><td>4568423</td><td>2026-10-16</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:24.621098+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2408</td><td>4568423</td><td>2026-10-15</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:23.889353+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2407</td><td>4568423</td><td>2026-10-14</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:23.135292+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2406</td><td>4568423</td><td>2026-10-13</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:22.377897+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2405</td><td>4568423</td><td>2026-10-12</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:21.535845+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2404</td><td>4568423</td><td>2026-10-11</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:20.758186+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2403</td><td>4568423</td><td>2026-10-10</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:19.994801+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2402</td><td>4568423</td><td>2026-10-09</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:19.224288+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2401</td><td>4568423</td><td>2026-10-08</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:18.454586+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2400</td><td>4568423</td><td>2026-10-07</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:17.708888+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2399</td><td>4568423</td><td>2026-10-06</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:16.885880+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2398</td><td>4568423</td><td>2026-10-05</td><td>0</td><td>published</td><td>B</td><td>115</td><td>2026-11-17 14:30:16.146770+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2397</td><td>4568423</td><td>2026-10-04</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:15.372213+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2396</td><td>4568423</td><td>2026-10-03</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:14.581287+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2395</td><td>4568423</td><td>2026-10-02</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:13.773949+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2394</td><td>4568423</td><td>2026-10-01</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:13.044778+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2393</td><td>4568423</td><td>2026-09-30</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:12.243103+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2392</td><td>4568423</td><td>2026-09-29</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:11.427569+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2391</td><td>4568423</td><td>2026-09-28</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:10.645985+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2390</td><td>4568423</td><td>2026-09-27</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:09.860164+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2389</td><td>4568423</td><td>2026-09-26</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:09.128906+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
+<tr><td>2388</td><td>4568423</td><td>2026-09-25</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:08.365384+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 </table>
 </body></html>

@@ -205,7 +205,14 @@ def handle(args: argparse.Namespace, scope: Scope) -> int:
             print(report(conn))
         elif args.command == "reconcile":
             diffs = compare_all(conn)
-            print(json.dumps([asdict(d) | {"equal": d.equal} for d in diffs], default=str))
+            payload = [asdict(d) | {"equal": d.equal} for d in diffs]
+            from sentinel.provenance import record
+
+            evidence = Path("results/reconcile_latest.json")
+            evidence.parent.mkdir(parents=True, exist_ok=True)
+            evidence.write_text(json.dumps(payload, indent=1, default=str) + "\n", encoding="utf-8")
+            record("reconcile", [str(evidence)], {"equal": all(d.equal for d in diffs)})
+            print(json.dumps(payload, default=str))
             return 0 if all(d.equal for d in diffs) else 1
     return 0
 

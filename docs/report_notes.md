@@ -48,34 +48,72 @@
   commit 9299589, on a clean ubuntu-24.04 machine. `make setup && make demo` passed and
   ended in "verified recovery, outputs equal golden".
 
-## M2-M13 — pipeline, recovery, experiments (2026-11-11)
+## M2-M13 — pipeline, recovery, experiments (2026-11-11; rerun 2026-11-17)
 
-**Evidence files:** `experiments/results/results.csv`, `metadata.json`,
-`summary_by_mode.csv`, `summary_by_fault_mode.csv`, `results_table.md`, `docs/figures/*.svg`.
+**Evidence files:** `experiments/results/` (synthetic) and `experiments/results_real/`
+(real Lahore files): `results.csv`, `metadata.json`, `summary_by_mode.csv`,
+`summary_by_fault_mode.csv`, `results_table.md`; figures in `docs/figures/`.
 
-- Track A: 160 trials (16 faults × 2 automated modes × 5 held-out seeds), 304.6 s total,
-  commit 087feed, PostgreSQL 18.6 (metadata.json). Synthetic data only.
-- Faulty trials (F1–F15, n = 75 per mode), from summary_by_mode.csv:
+- Both experiments were rerun on commit 4f42feb (quality rules v2, injector v2;
+  classifier clf-1 unchanged): 160 trials each, 235.6 s (synthetic) and 228.2 s (real),
+  PostgreSQL 18.6 (metadata.json). The first synthetic run (087feed) is superseded.
+- Faulty trials (F1-F15, n = 75 per mode), from summary_by_mode.csv. **Identical counts
+  on synthetic and real data:**
   - outputs equal golden: guarded 70/75, retries_only 60/75;
   - handled as expected: guarded 70/75, retries_only 40/75;
   - recovered without a human: guarded 50/75, retries_only 60/75 (guarded escalates the
-    25 trials whose faults require a human decision: F3, F5, F6, F13, F15);
-  - wrong hourly or daily values published: 0 in both modes;
+    25 trials whose faults need a human decision: F3, F5, F6, F13, F15);
+  - wrong hourly or daily values published: 0 in both modes, both datasets;
   - missing location-days: guarded 5 (all F5, waiting for a human), retries_only 15
     (F2, F5, F7);
   - inappropriate automatic actions: 0 in both modes;
-  - time to verified recovery, when needed, median [IQR]: guarded 0.176 s
-    [0.047, 0.251], retries_only 1.314 s [1.159, 1.379]. Backoffs were scaled to 0 and
-    the dataset is tiny, so this is relative cost only.
-- Overhead vs F0 (summary_by_fault_mode.csv): most cells lie within about ±0.3 s, which
-  is the noise level on this laptop. The exception is F12 under guarded, median 0.541 s
-  [0.539, 0.637], because it retries every location-day skipped after the dropped
-  connection. No other overhead difference is claimed.
-- Classifier clf-1: 80/80 correct on held-out seeds (column `classified_correctly`).
-- Not measured: manual mode (needs a human operator), Track B (needs the API key and
-  a snapshot window), real Lahore data.
+  - time to verified recovery when needed, median [IQR]: guarded 0.152 s [0.042, 0.182]
+    synthetic, 0.146 s [0.042, 0.168] real; retries_only 0.991 s [0.826, 1.012]
+    synthetic, 0.964 s [0.935, 1.002] real. Backoffs were scaled to 0 and the datasets
+    are tiny, so this is relative cost only.
+- Overhead vs F0 (summary_by_fault_mode.csv): F12 under guarded has a median of 0.411 s
+  synthetic and 0.301 s real, because it retries each location-day skipped after the
+  dropped connection. Every other median is within 0.365 s (synthetic) and 0.287 s
+  (real), which is the noise level here. **No overhead difference is claimed.**
+- Classifier clf-1: 80/80 correct on held-out seeds, in both datasets.
+- Found and fixed with real data (ADR-022): F13 and F14 first mutated rows in file order.
+  On the multi-parameter AirGradient file they never touched PM2.5, so F13 "missed"
+  escalation 5/5 in a real-data run that has since been replaced. Lesson: check that
+  faults manifest on production-shaped data.
+- Not measured: manual mode (needs a human operator); Track B revisions (baseline
+  snapshot only).
 - `make demo`: truncated transfer → P03 refetch → verified; revision → P06 → outputs
   `revised`; all tables equal golden.
+
+## M1 completed with real Lahore data (2026-11-17)
+
+**Evidence files:** `config/locations_lahore.csv`, `results/m1_locations.csv`,
+`results/m1_coverage_summary.md`, `results/quality_rules_v1_vs_v2.csv`,
+`results/quality_rules_v1_vs_v2_by_rule.csv`, `results/lahore_pm25.md`,
+`results/lahore_pm25_by_month.csv`, `results/lahore_pm25_by_season.csv`,
+`docs/figures/lahore_pm25_monthly.svg`, `data/snapshots/20261117T152712Z/meta.json`
+(not committed).
+
+- The API key was rejected (HTTP 401). Locations came from the public Explorer, with
+  every detail verified from archive files (ADR-020).
+- Coverage (m1_coverage_summary.md):
+  - 8664: a file on 1909/2113 days of its active span (90%);
+  - 4568423: a file on 528/533 days (99%);
+  - median arrival lag: 72.0 h for 4568423, matching OpenAQ's documented ~72 h;
+    15706.1 h for 8664, whose files were written long after their dates (a
+    historical backfill).
+- All 2,437 real files were variant B, and rule Q06 never fired, which supports
+  end-of-hour stamps.
+- Rules v1 → v2 (quality_rules_v1_vs_v2.csv), recomputed from the raw files: 8664
+  blocked days 392 → 16. Cause: 7,879 rows of `-999.0` (a missing-value code).
+- After the run, reprocessing and the golden rebuild, every published table equals
+  golden on real data (results/reconcile_latest.json): 48,267 hourly facts, 2,437 daily
+  rows, 88 monthly rows; 0 missing, 0 extra, 0 wrong, checksums equal.
+- Lahore PM2.5 (lahore_pm25.md): 8664 has 1,448 exceedance days out of 1,464 complete
+  days; the winter mean of daily means is 179.8 µg/m³ (2019/20) to 254.2 µg/m³
+  (2023/24). 4568423 (uncorrected low-cost): 485 of 488. Rule Q12 flags 646 hours at
+  8664 above 500 µg/m³ (quality_rules_v1_vs_v2_by_rule.csv).
+- Track B: first snapshot 20261117T152712Z, 2,437 keys (baseline only).
 
 **Possible tables/figures for the report:** summary_by_mode (table),
 handled_as_expected.svg (figure), the per-fault table (appendix), the demo transcript

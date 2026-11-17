@@ -24,8 +24,8 @@ evaluation seeds (11-15) are variants not seen during development (seeds 1-3).
 | F10 | crash after staging, before commit (run 0) | pipeline | clean | `process_crash` -> resume (P02) | no |
 | F11 | crash in the middle of the mart refresh | pipeline | clean | `process_crash` -> resume (P02) | no |
 | F12 | database backend killed (pg_terminate_backend) | infrastructure | clean | `transient_db` -> retry (P01) | no |
-| F13 | unit becomes `ppm` for the rest of the day | upstream | faulty file | blocked; `unknown_unit` -> escalate (P09) | yes |
-| F14 | 8-hour stuck run + 3 spikes (x6) | upstream | faulty file | flagged (Q13, Q14) and kept | no |
+| F13 | the PM2.5 series switches to `ppm` part-way through the day (injector v2, ADR-022) | upstream | faulty file | blocked; `unknown_unit` -> escalate (P09) | yes |
+| F14 | 8-hour stuck run + 3 spikes (x6) in the PM2.5 series (v2) | upstream | faulty file | flagged (Q13, Q14) and kept | no |
 | F15 | local times written with `+00:00` | upstream | faulty file | blocked; `timezone_offset` -> escalate (P10) | yes |
 
 Tests: `tests/unit/test_faults_recovery.py` checks that every trial is deterministic,
