@@ -3,7 +3,7 @@
 # quarantined row records the (id, version) that rejected it.
 # Actions: quarantine = row removed and stored in quarantine.aq_rejects;
 #          flag = row kept, flag added to fact.flags; block = location-day not published.
-version: 1
+version: 2   # v2 (2026-11-17): Q00 missing-value codes, ADR-021
 
 # Location-day is BLOCKED when more than this share of in-scope rows is quarantined.
 # Project choice (not a cited standard); tested at 20% and documented in QUALITY_RULES.md.
@@ -27,6 +27,11 @@ unit_factors_to_ugm3:
   "mg/m³": 1000.0
   "mg/m3": 1000.0
 
+# Exact values that mean "no measurement" (v2, ADR-021). Evidence, not a citation: in the
+# real 8664 files, 7,879 rows hold exactly -999.0, a physically impossible value, while the
+# next most negative value is -7. A search found no source documenting the code.
+missing_value_codes: [-999.0]
+
 # Stuck sensor: the same value for at least this many consecutive hours -> flag.
 stuck_min_hours: 6
 
@@ -39,6 +44,7 @@ hampel: {half_window: 3, n_sigmas: 3.0}
 relocation_tolerance_deg: 0.001
 
 rules:
+  - {id: Q00_missing_code,       version: 1, action: quarantine, what: "value is a missing-value code (e.g. -999); counts as a missing hour, not a bad row"}
   - {id: Q01_bad_timestamp,      version: 1, action: quarantine, what: "datetime does not parse"}
   - {id: Q02_bad_value,          version: 1, action: quarantine, what: "value missing, not a number, NaN or inf"}
   - {id: Q03_negative,           version: 1, action: quarantine, what: "value < 0"}

@@ -139,6 +139,11 @@ def summarise(
         pl.col("arrival_lag_h").median().alias("median_arrival_lag_h"),
         pl.col("arrival_lag_h").max().alias("max_arrival_lag_h"),
         pl.col("size_bytes").sum().alias("total_bytes"),
+        # Active span = first to last day WITH a file: the fair denominator for a
+        # location that started (or stopped) inside the study range.
+        ((pl.col("source_date").max() - pl.col("source_date").min()).dt.total_days() + 1)
+        .cast(pl.Int64)
+        .alias("days_in_active_span"),
     )
     out = locations.join(per_loc, on="location_id", how="left").with_columns(
         pl.lit(days_in_range).alias("days_in_range"),

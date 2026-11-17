@@ -13,15 +13,19 @@ lahore:
 # Source dates (local calendar days of each location). end: null means "today minus
 # 4 days", because files are written about 72 h after the local day ends (RESEARCH §5).
 date_range:
-  start: 2024-01-01
+  start: 2019-05-01   # all history of the reference monitor 8664 (from 2019-05-23)
   end: null
 
-parameters: [pm25, pm10]
+# Both chosen locations measure PM2.5 only (config/locations_lahore.csv), so PM10 is out of
+# scope: gating it would mark every day "partial: 0 hours" (2026-11-17).
+parameters: [pm25]
 
-# Chosen study locations (OpenAQ location ids). Empty until the author decides after
-# the M1 coverage report. M2 onwards loads only these.
-locations: []
+# Chosen study locations (OpenAQ location ids), from results/m1_coverage_summary.md
+# (2026-11-17): 8664 = US Diplomatic Post Lahore, reference grade, 2019-05-23..2025-03-04;
+# 4568423 = Model Town, AirGradient low-cost sensor, from 2025-05-30. Found on the public
+# OpenAQ Explorer (config/locations_lahore.csv) because no working API key was available.
+# Proposed by Claude; the author confirms or changes the choice.
+locations: [8664, 4568423]
 
-# Locations recorded by the daily snapshot (Track B). Filled after discovery with every
-# Lahore-area PM location, so revision history starts before the final choice.
-snapshot_locations: []
+# Locations recorded by the daily snapshot (Track B).
+snapshot_locations: [8664, 4568423]

@@ -54,7 +54,7 @@ def test_one_degree_of_latitude() -> None:
 
 def test_repo_scope_file_is_valid() -> None:
     scope = load_scope(ROOT / "config/scope.yaml")
-    assert scope.country_iso == "PK" and scope.parameters == ["pm25", "pm10"]
+    assert scope.country_iso == "PK" and scope.parameters == ["pm25"]  # chosen sites: PM2.5 only
     assert scope.date_range.resolved_end(today=date(2026, 11, 11)) == date(2026, 11, 7)
 
 

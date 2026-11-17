@@ -152,6 +152,43 @@ def run_landing(
     return summary
 
 
+def reprocess(conn: Conn, pipe: Pipeline, location_ids: list[int]) -> dict[str, int]:
+    """Replay quality, fact, marts and verification for the current batch of every
+    location-day, ignoring checkpoints. Used after a quality-rule version change: the
+    stages are idempotent (ADR-015), so replaying converges to what a fresh load gives."""
+    rows = conn.execute(
+        "SELECT DISTINCT ON (location_id, source_date) batch_id FROM ops.batch_manifest"
+        " WHERE location_id = ANY(%s) AND status <> 'rejected'"
+        " ORDER BY location_id, source_date, revision_no DESC",
+        (location_ids,),
+    ).fetchall()
+    # Gate rows exist only for in-scope parameters; drop derived rows of any parameter
+    # that left the scope, so the mart refresh does not resurrect them.
+    removed = conn.execute(
+        "DELETE FROM ops.publication_status WHERE location_id = ANY(%s)"
+        " AND NOT (parameter = ANY(%s))",
+        (location_ids, list(pipe.parameters)),
+    ).rowcount
+    conn.execute(
+        "DELETE FROM wh.mart_daily_location WHERE location_id = ANY(%s)"
+        " AND NOT (parameter = ANY(%s))",
+        (location_ids, list(pipe.parameters)),
+    )
+    conn.execute(
+        "DELETE FROM wh.mart_exceedance_summary WHERE location_id = ANY(%s)"
+        " AND NOT (parameter = ANY(%s))",
+        (location_ids, list(pipe.parameters)),
+    )
+    out = {"replayed": 0, "verified": 0, "blocked": 0, "out_of_scope_gate_rows_removed": removed}
+    for (batch_id,) in rows:
+        result = pipe.quality_and_fact(conn, batch_id)
+        pipe.marts_and_gate(conn, batch_id)
+        out["verified"] += int(pipe.verify(conn, batch_id))
+        out["blocked"] += int(result.blocked)
+        out["replayed"] += 1
+    return out
+
+
 def _error(
     loc: int, d: date, batch_id: int | None, exc: BaseException, skipped: bool = False
 ) -> dict[str, Any]:

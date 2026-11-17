@@ -56,6 +56,9 @@ class QualityConfig(BaseModel):
     stuck_min_hours: int = Field(ge=2)
     hampel: Hampel
     relocation_tolerance_deg: float = Field(gt=0)
+    # Exact values that mean "no measurement" (v2, ADR-021). Such rows are quarantined
+    # as Q00 but are NOT bad data: they lower completeness, not the reject rate.
+    missing_value_codes: list[float] = Field(default_factory=list)
     rules: list[Rule]
 
     def rule(self, rule_id: str) -> Rule:
@@ -126,6 +129,7 @@ def _row_checks(df: pl.DataFrame, cfg: QualityConfig, ctx: DayContext) -> list[t
     expected_offset = (local.dt.base_utc_offset() + local.dt.dst_offset()).dt.total_seconds()
     hour_start_local_date = (local - pl.duration(hours=1)).dt.date()
     return [
+        ("Q00_missing_code", pl.col("value").is_in(cfg.missing_value_codes)),
         ("Q10_bad_sensor", pl.col("sensor_id").is_null()),
         ("Q09_wrong_location", pl.col("file_location_id") != ctx.location_id),
         ("Q01_bad_timestamp", pl.col("ts_utc").is_null()),
@@ -188,8 +192,10 @@ def evaluate(frame: pl.DataFrame, cfg: QualityConfig, ctx: DayContext) -> Qualit
     )
 
     accepted, relocations = _flag(survivors, cfg, ctx, counts)
-    n = in_scope.height
-    rate = rejected.height / n if n else 0.0
+    # Missing-value codes are absent hours, not bad rows: excluded from both sides.
+    missing = counts.get("Q00_missing_code", 0)
+    n = in_scope.height - missing
+    rate = (rejected.height - missing) / n if n else 0.0
     blocked = n > 0 and rate > cfg.reject_rate_block_threshold
     if blocked:
         counts["B01_reject_rate"] = 1

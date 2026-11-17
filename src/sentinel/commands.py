@@ -36,7 +36,9 @@ def add_parsers(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> Non
     r.add_argument("--landing", type=Path, default=Path("data/landing_drop"))
     r.add_argument("--raw", type=Path, default=Path("data/raw"), help="raw store (manual trials)")
     sub.add_parser("revisions-report", help="Track B report from snapshots + live warehouse")
-    sub.add_parser("analyse", help="summaries and figures from experiments/results/results.csv")
+    an = sub.add_parser("analyse", help="summaries and figures from experiment results")
+    an.add_argument("--dir", type=Path, default=Path("experiments/results"))
+    an.add_argument("--tag", default="", help='"" synthetic, "real" for the Lahore window')
     dash = sub.add_parser("dashboard", help="static HTML dashboard over the ops views")
     dash.add_argument("--db", default=None, help="database (default: SENTINEL_DB_NAME)")
     dash.add_argument("--out", type=Path, default=Path("docs/dashboard.html"))
@@ -47,6 +49,11 @@ def add_parsers(sub: argparse._SubParsersAction[argparse.ArgumentParser]) -> Non
     sub.add_parser("manual-finish", help="stop the clock, compare with golden, record")
     sub.add_parser("demo", help="3-day run with an injected fault and a revision")
     sub.add_parser("golden", help="rebuild the golden schema from the latest revisions")
+    rc = sub.add_parser("rules-compare", help="blocked days under two quality-rule versions")
+    rc.add_argument("--old", type=Path, default=Path("config/archive/quality_rules_v1.yaml"))
+    sub.add_parser("lahore-report", help="Lahore PM2.5 by month and winter, from the marts")
+    rp = sub.add_parser("reprocess", help="replay quality..verify after a rule change")
+    rp.add_argument("--locations", help="ids (default: scope.locations)")
     sub.add_parser("reconcile", help="compare published tables with golden (exit 1 if different)")
     d = sub.add_parser("daily", help="guarded run over the last 14 days of the scope")
     d.add_argument("--start", type=date.fromisoformat)
@@ -68,10 +75,24 @@ def _ids(text: str | None, default: list[int]) -> list[int]:
 
 def handle(args: argparse.Namespace, scope: Scope) -> int:
     """Run one pipeline command."""
+    if args.command == "rules-compare":
+        from sentinel.quality import load_quality_config
+        from sentinel.rulecompare import compare
+
+        outs = compare(
+            load_quality_config(args.old),
+            load_quality_config(),
+            Path("data/landing_drop"),
+            Path("results/m1_locations.csv"),
+            scope.locations,
+            tuple(scope.parameters),
+        )
+        print(json.dumps([str(p) for p in outs]))
+        return 0
     if args.command == "analyse":
         from sentinel.analysis import analyse
 
-        print(json.dumps([str(p) for p in analyse()]))
+        print(json.dumps([str(p) for p in analyse(args.dir, args.tag)]))
         return 0
     if args.command == "manual-start":
         from sentinel.manual import start
@@ -162,6 +183,15 @@ def handle(args: argparse.Namespace, scope: Scope) -> int:
             )
             print(json.dumps(asdict(summary), default=str))
             return 1 if summary.errors else 0
+        elif args.command == "lahore-report":
+            from sentinel.lahore import report as lahore_report
+
+            print(json.dumps([str(p) for p in lahore_report(conn)]))
+        elif args.command == "reprocess":
+            from sentinel.ops import reprocess
+
+            ids = _ids(args.locations, scope.locations)
+            print(json.dumps(reprocess(conn, make_pipeline(scope), ids)))
         elif args.command == "golden":
             pipe = make_pipeline(scope)
             print(

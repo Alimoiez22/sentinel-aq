@@ -303,3 +303,55 @@ for accepted decisions are rewritten by the author in his own words.
   Fixed (autocommit connections), with a regression test reading through a second
   connection. Integration tests had missed it because they read through the same
   connection.
+
+## ADR-020 — Location discovery without the OpenAQ API
+- **Date:** 2026-11-17 · **Milestone:** M1 · **Status:** proposed by Claude
+- **Context.** The API key in `.env` is rejected (HTTP 401, "Invalid credentials").
+  Claude may not fetch or move account credentials, so discovery through the API was
+  blocked. The public archive holds only `records/`, with no location metadata, and
+  downloading a sample file from every location worldwide to read its coordinates is
+  not feasible on this connection.
+- **Options.** (a) Wait for a working key. (b) Read location IDs from the public OpenAQ
+  Explorer, then verify everything else from archive files. (c) Scrape the Explorer's
+  network traffic. Rejected: that would use OpenAQ's own key and go against their terms.
+- **Decision.** (b). Two locations were read on 2026-11-17 by browsing the Explorer map,
+  filtered to Lahore:
+  - **8664**, US Diplomatic Post: the only reference monitor in the central-Lahore
+    view, including stations without recent updates;
+  - **4568423**, Model Town: an AirGradient low-cost sensor.
+
+  Their coordinates, sensor ids, header variant and active span were then verified from
+  archive files. Provenance for every row is in `config/locations_lahore.csv`, used by
+  `make discover-csv`.
+- **Consequences.** The location set is **not exhaustive**. About 40 air-sensor markers
+  were visible in Lahore, but the Explorer's map would not render while the browser
+  pane was hidden, so they were not enumerated. With a working key, `make discover`
+  replaces this file with a complete country list. The licence of 8664 is not stated on
+  its page; it is recorded as "not stated".
+
+## ADR-021 — Missing-value codes are missing hours, not bad data (quality rules v2)
+- **Date:** 2026-11-17 · **Milestone:** M4 (found on real data) · **Status:** proposed by Claude
+- **Context.** The first full run on real Lahore data (2,437 location-days) published
+  2,045 and blocked 392. All 392 blocks were at location 8664 and caused by Q03
+  (negative value). Of the 8,107 quarantined Q03 rows, 7,879 hold exactly `-999.0`;
+  the rest are small negatives between −1 and −7. A value of −999 is physically
+  impossible and appears thousands of times as an exact repeat, so it is a
+  missing-value code, not a measurement. Counting it as bad data made days with a few
+  missing hours look corrupt and blocked them.
+- **Evidence and its limit.** The evidence is the data itself. Two web searches found no
+  StateAir/AirNow document that defines −999. AirNow's hourly fact sheet does say that
+  small negative values (typically above −5) come from instrument drift in clean air;
+  that supports leaving Q03 as is for genuine negatives.
+- **Options.** (a) Keep v1 and leave such days blocked. (b) Lower the block threshold.
+  Rejected: RB-07 forbids changing thresholds to publish data. (c) A new rule Q00 for
+  exact missing-value codes: quarantined with that reason, excluded from both sides of
+  the reject rate, so missing hours lower completeness (and give "partial") instead of
+  blocking.
+- **Decision.** (c). Quality rules v2: `missing_value_codes: [-999.0]` and rule
+  Q00_missing_code v1. Q03 is unchanged and still quarantines all negatives,
+  conservatively; accepting values above −5, as AirNow does, was considered and left for
+  the author to decide. Existing days are replayed with `make reprocess`, which is safe
+  because every stage is idempotent (ADR-015).
+- **Consequences.** Blocking means "the delivered data is bad", not "data is missing".
+  Tested in `tests/unit/test_quality.py` (codes alone do not block; codes plus 25 % bad
+  rows still block). Before/after counts are in docs/report_notes.md.

@@ -29,7 +29,7 @@ import tempfile
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
@@ -40,6 +40,7 @@ import yaml
 
 from sentinel import db, faults_hooks
 from sentinel.faults import N_RUNS, Trial, build_trial
+from sentinel.openaq.archive import parse_key
 from sentinel.ops import load_guidelines, reset_database, seed_locations
 from sentinel.pipeline import Conn, Pipeline
 from sentinel.provenance import git_commit
@@ -282,12 +283,18 @@ def run_all(
 ) -> Path:
     """Every fault x mode x seed from the config. Writes results.csv and metadata.json."""
     cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
-    if cfg["dataset"] != "synthetic":
-        raise NotImplementedError("real-data trials need the M1 location choice first")
     with connect_exp() as c:
         db.migrate(c)
-    clean = clean_dataset()
-    run0 = datetime.fromisoformat(cfg["run0_utc"])
+    results_dir = Path(cfg.get("results_dir", RESULTS))
+    locations_csv = SYNTH / "LOCATIONS.csv"
+    if cfg["dataset"] == "synthetic":
+        clean = clean_dataset()
+        run0 = datetime.fromisoformat(cfg["run0_utc"])
+    elif cfg["dataset"] == "real":
+        clean, run0 = real_dataset(cfg["real_window"])
+        locations_csv = Path(cfg["real_window"]["locations_csv"])
+    else:
+        raise ValueError(f"unknown dataset {cfg['dataset']}")
     rows: list[dict[str, Any]] = []
     started = time.perf_counter()
     with tempfile.TemporaryDirectory(prefix="sentinel-exp-") as tmp:
@@ -302,6 +309,7 @@ def run_all(
                         run0,
                         float(cfg["backoff_scale"]),
                         Path(tmp) / f"{fault}-{mode}-{seed}",
+                        locations_csv,
                     )
                     rows.append(asdict(res))
                     progress(
@@ -319,19 +327,42 @@ def run_all(
         .with_columns((pl.col("wall_s") - pl.col("_base")).round(4).alias("overhead_s"))
         .drop("_base")
     )
-    RESULTS.mkdir(parents=True, exist_ok=True)
-    out = RESULTS / "results.csv"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out = results_dir / "results.csv"
     df.write_csv(out)
     meta = environment() | {
         "experiment_config": cfg,
         "n_trials": df.height,
         "total_wall_s": round(time.perf_counter() - started, 1),
         "manual_mode": "not run: needs a human operator (make manual-trial)",
+        "dataset_keys": sorted(clean),
+        "run0_utc": run0.isoformat(),
     }
-    (RESULTS / "metadata.json").write_text(
+    (results_dir / "metadata.json").write_text(
         json.dumps(meta, indent=2, default=str) + "\n", encoding="utf-8"
     )
     return out
+
+
+def real_dataset(window: dict[str, Any]) -> tuple[dict[str, bytes], datetime]:
+    """Clean dataset from REAL files: the latest stored version of each listed
+    location-day (landing mirror). run0 is placed 80 h after the newest day ends, so that
+    day is inside its 96 h grace window (needed by F8, late file)."""
+    from sentinel.recovery import day_key
+
+    landing = Path(window.get("landing", "data/landing_drop"))
+    clean: dict[str, bytes] = {}
+    for item in window["days"]:
+        d0, d1 = date.fromisoformat(item["start"]), date.fromisoformat(item["end"])
+        for i in range((d1 - d0).days + 1):
+            key = day_key(int(item["location_id"]), d0 + timedelta(days=i))
+            path = landing / key
+            if not path.exists():
+                raise FileNotFoundError(f"{key} is not in {landing}: run make fetch first")
+            clean[key] = path.read_bytes()
+    newest = max(parse_key(k)[1] for k in clean)
+    day_end = datetime.combine(newest + timedelta(days=1), datetime.min.time(), tzinfo=UTC)
+    return clean, day_end + timedelta(hours=80)
 
 
 def iqr(xs: list[float]) -> tuple[float, float]:

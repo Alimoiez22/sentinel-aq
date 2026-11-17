@@ -111,3 +111,60 @@ def test_policy_covers_every_class_and_allow_lists_actions() -> None:
     for e in EXPECTED.values():
         if e.failure_class and not e.automatic:
             assert policy.for_class(e.failure_class).action == "escalate"
+
+
+def _multi_parameter_day() -> bytes:
+    """AirGradient-shaped file: pm1 rows first, then pm25, then humidity (file order)."""
+    import random as _r
+
+    from sentinel.faults import _write
+
+    header = ["location_id", "sensors_id", "location", "datetime", "lat", "lon", "parameter",
+              "units", "value"]  # fmt: skip
+    rows = []
+    rng = _r.Random(1)  # noqa: S311 - test data
+    for sensor, param, unit in (
+        (1, "pm1", "µg/m³"),
+        (2, "pm25", "µg/m³"),
+        (3, "relativehumidity", "%"),
+    ):
+        for h in range(1, 25):
+            ts = f"2025-11-01T{h:02d}:00:00+05:00" if h < 24 else "2025-11-02T00:00:00+05:00"
+            rows.append(
+                [
+                    "7",
+                    str(sensor),
+                    "X",
+                    ts,
+                    "31.5",
+                    "74.3",
+                    param,
+                    unit,
+                    f"{rng.uniform(40, 200):.1f}",
+                ]
+            )
+    return _write(header, rows)
+
+
+def test_series_faults_hit_the_published_parameter() -> None:
+    """Regression (ADR-022): on multi-parameter files F13/F14 must change PM2.5 rows,
+    not only out-of-scope parameters that come first or last in the file."""
+    import random as _r
+
+    import polars as pl
+
+    from sentinel.faults import stuck_and_spikes, unit_change
+
+    data = _multi_parameter_day()
+    for seed in range(5):
+        f13 = parse_file(unit_change(data, _r.Random(seed))).frame  # noqa: S311
+        ppm = f13.filter(pl.col("unit_raw") == "ppm")
+        assert set(ppm["parameter"]) == {"pm25"} and 8 <= ppm.height <= 16
+        before = parse_file(data).frame.filter(pl.col("parameter") == "pm25")["value"]
+        after = parse_file(stuck_and_spikes(data, _r.Random(seed))).frame  # noqa: S311
+        changed = (after.filter(pl.col("parameter") == "pm25")["value"] != before).sum()
+        assert changed >= 3
+        other = after.filter(pl.col("parameter") != "pm25")["value"]
+        assert (
+            other == parse_file(data).frame.filter(pl.col("parameter") != "pm25")["value"]
+        ).all()

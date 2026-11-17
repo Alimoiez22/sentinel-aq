@@ -130,24 +130,40 @@ def comma_decimals(data: bytes) -> bytes:
     return _write(h, rows)
 
 
+def _series(h: list[str], rows: list[list[str]], parameter: str = "pm25") -> list[int]:
+    """Row indexes of one parameter's series in time order (the series the pipeline
+    publishes). Falls back to every row when the file has no such parameter.
+
+    Injector v2 (2026-11-17): v1 mutated rows in FILE order, which on real multi-parameter
+    files (AirGradient: pm1, pm25, rh, temperature, um003) hit only out-of-scope
+    parameters, so F13/F14 never manifested in the published series. See ADR-022.
+    """
+    pi, di = h.index("parameter"), h.index("datetime")
+    idx = [i for i, r in enumerate(rows) if r[pi] == parameter]
+    return sorted(idx, key=lambda i: rows[i][di]) if idx else list(range(len(rows)))
+
+
 def unit_change(data: bytes, rng: random.Random) -> bytes:
-    """F13: unit switches to ppm half-way through the day (not convertible for PM)."""
+    """F13: the PM2.5 series switches to ppm part-way through the day (not convertible)."""
     h, rows = _read(data)
     ui = h.index("unit") if "unit" in h else h.index("units")
-    start = rng.randint(len(rows) // 3, len(rows) // 2)
-    for r in rows[start:]:
-        r[ui] = "ppm"
+    series = _series(h, rows)
+    start = rng.randint(len(series) // 3, len(series) // 2)
+    for i in series[start:]:
+        rows[i][ui] = "ppm"
     return _write(h, rows)
 
 
 def stuck_and_spikes(data: bytes, rng: random.Random) -> bytes:
-    """F14: an 8-hour stuck run on one sensor plus a burst of 3 large spikes."""
+    """F14: an 8-hour stuck run plus a burst of 3 large spikes, in the PM2.5 series."""
     h, rows = _read(data)
     vi = h.index("value")
-    start = rng.randint(0, 10)
-    for r in rows[start : start + 8]:
-        r[vi] = rows[start][vi]
-    for i in rng.sample(range(24, len(rows)), k=3):
+    series = _series(h, rows)
+    start = rng.randint(0, max(0, min(10, len(series) - 8)))
+    for i in series[start : start + 8]:
+        rows[i][vi] = rows[series[start]][vi]
+    rest = [i for i in series if i not in series[start : start + 8]]
+    for i in rng.sample(rest, k=min(3, len(rest))):
         rows[i][vi] = f"{float(rows[i][vi]) * 6:.1f}"
     return _write(h, rows)
 

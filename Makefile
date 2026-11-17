@@ -100,6 +100,10 @@ test: up
 discover:
 	$(RUN_NODB) sentinel discover
 
+## discover-csv: discovery without the API, from config/locations_lahore.csv (provenance in file)
+discover-csv:
+	$(RUN_NODB) sentinel discover --from-csv config/locations_lahore.csv
+
 ## coverage: S3 listings for candidates, then the summary report (LAHORE_ONLY=yes to narrow)
 coverage:
 	$(RUN_NODB) sentinel coverage-listing $(if $(filter yes,$(LAHORE_ONLY)),--lahore-only,)
@@ -129,6 +133,18 @@ test-network:
 experiment: up
 	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=ERROR sentinel experiment"
 
+## experiment-real: Track A on real Lahore files (config/experiments_real.yaml)
+experiment-real: up
+	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=ERROR sentinel experiment --config config/experiments_real.yaml"
+
+## lahore-report: Lahore PM2.5 by month and winter, from the verified marts
+lahore-report: up
+	$(RUN_APP) sentinel lahore-report
+
+## reprocess: replay quality..verify for scope locations (after a rule version change)
+reprocess: up
+	$(RUN_APP) sh -c "SENTINEL_LOG_LEVEL=WARNING sentinel reprocess"
+
 ## golden: rebuild the golden schema from the latest raw revisions
 golden: up
 	$(RUN_APP) sentinel golden
@@ -144,6 +160,7 @@ demo: up db-aux
 ## analyse: summary tables and figures from experiments/results/results.csv
 analyse:
 	$(RUN_NODB) sentinel analyse
+	@if [ -f experiments/results_real/results.csv ]; then $(RUN_NODB) sentinel analyse --dir experiments/results_real --tag real; fi
 
 ## revisions-report: Track B report from data/snapshots and the live warehouse
 revisions-report: up

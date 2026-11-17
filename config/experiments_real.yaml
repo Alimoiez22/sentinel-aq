@@ -1,0 +1,20 @@
+# Track A on REAL Lahore data (`make experiment-real`). Same faults, modes, seeds and
+# frozen classifier as config/experiments.yaml; only the clean starting files differ.
+version: 1
+dataset: real
+results_dir: experiments/results_real
+faults: [F0, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15]
+modes: [retries_only, guarded]
+development_seeds: [1, 2, 3]
+seeds: [11, 12, 13, 14, 15]
+backoff_scale: 0.0
+# Smog-season window: 3 consecutive days per location, all present in the archive
+# (results/m1_coverage_listing.csv). 8664 = reference monitor (US Diplomatic Post),
+# 4568423 = low-cost AirGradient sensor (Model Town). run0 is derived: 80 h after the
+# newest day ends (experiments.real_dataset).
+real_window:
+  locations_csv: results/m1_locations.csv
+  landing: data/landing_drop
+  days:
+    - {location_id: 8664, start: "2024-11-14", end: "2024-11-16"}
+    - {location_id: 4568423, start: "2025-11-14", end: "2025-11-16"}

@@ -1,0 +1,89 @@
+location_id,name,month,days_gated,complete_days,mean_of_daily_means,median_daily_mean,exceedance_days
+8664,US Diplomatic Post: Lahore,2019-05-01,9,9,102.6,94.1,9
+8664,US Diplomatic Post: Lahore,2019-06-01,30,28,88.0,76.8,28
+8664,US Diplomatic Post: Lahore,2019-07-01,31,30,57.3,60.2,30
+8664,US Diplomatic Post: Lahore,2019-08-01,31,31,55.2,47.8,31
+8664,US Diplomatic Post: Lahore,2019-09-01,30,27,70.7,71.4,27
+8664,US Diplomatic Post: Lahore,2019-10-01,31,22,165.0,137.4,22
+8664,US Diplomatic Post: Lahore,2019-11-01,30,30,201.7,181.8,30
+8664,US Diplomatic Post: Lahore,2019-12-01,31,31,251.1,245.8,31
+8664,US Diplomatic Post: Lahore,2020-01-01,31,31,183.1,154.9,31
+8664,US Diplomatic Post: Lahore,2020-02-01,29,29,77.3,93.8,19
+8664,US Diplomatic Post: Lahore,2020-03-01,31,30,75.9,57.0,29
+8664,US Diplomatic Post: Lahore,2020-04-01,30,27,39.4,34.3,27
+8664,US Diplomatic Post: Lahore,2020-05-01,31,19,65.5,57.9,19
+8664,US Diplomatic Post: Lahore,2020-06-01,30,29,65.1,61.6,29
+8664,US Diplomatic Post: Lahore,2020-07-01,31,26,44.4,47.5,26
+8664,US Diplomatic Post: Lahore,2020-08-01,29,28,29.3,28.7,25
+8664,US Diplomatic Post: Lahore,2020-09-01,30,30,64.8,60.3,28
+8664,US Diplomatic Post: Lahore,2020-10-01,31,30,152.6,133.0,30
+8664,US Diplomatic Post: Lahore,2020-11-01,30,29,231.6,207.3,29
+8664,US Diplomatic Post: Lahore,2020-12-01,30,23,243.1,233.3,23
+8664,US Diplomatic Post: Lahore,2021-01-01,31,31,202.1,194.6,31
+8664,US Diplomatic Post: Lahore,2021-02-01,26,20,228.3,229.2,20
+8664,US Diplomatic Post: Lahore,2021-03-01,31,26,90.2,82.8,26
+8664,US Diplomatic Post: Lahore,2021-04-01,26,19,67.1,58.0,19
+8664,US Diplomatic Post: Lahore,2021-05-01,28,22,61.6,64.1,22
+8664,US Diplomatic Post: Lahore,2021-06-01,30,17,49.1,47.4,17
+8664,US Diplomatic Post: Lahore,2021-07-01,24,11,39.8,40.0,11
+8664,US Diplomatic Post: Lahore,2021-08-01,28,19,61.2,63.0,19
+8664,US Diplomatic Post: Lahore,2021-09-01,30,21,67.4,59.2,21
+8664,US Diplomatic Post: Lahore,2021-10-01,31,20,103.9,103.8,20
+8664,US Diplomatic Post: Lahore,2021-11-01,30,0,,,0
+8664,US Diplomatic Post: Lahore,2021-12-01,31,20,367.1,349.3,20
+8664,US Diplomatic Post: Lahore,2022-01-01,30,30,204.8,211.6,30
+8664,US Diplomatic Post: Lahore,2022-02-01,24,19,161.9,147.9,19
+8664,US Diplomatic Post: Lahore,2022-03-01,27,0,,,0
+8664,US Diplomatic Post: Lahore,2022-04-01,26,14,135.4,134.3,14
+8664,US Diplomatic Post: Lahore,2022-05-01,27,14,100.6,95.9,14
+8664,US Diplomatic Post: Lahore,2022-06-01,6,5,109.2,113.1,5
+8664,US Diplomatic Post: Lahore,2022-09-01,9,0,,,0
+8664,US Diplomatic Post: Lahore,2022-10-01,31,17,109.3,103.5,17
+8664,US Diplomatic Post: Lahore,2022-11-01,30,0,,,0
+8664,US Diplomatic Post: Lahore,2022-12-01,31,0,,,0
+8664,US Diplomatic Post: Lahore,2023-01-01,27,20,229.0,196.6,20
+8664,US Diplomatic Post: Lahore,2023-02-01,17,10,149.5,129.4,10
+8664,US Diplomatic Post: Lahore,2023-03-01,14,14,69.3,65.4,14
+8664,US Diplomatic Post: Lahore,2023-04-01,24,19,68.4,66.9,19
+8664,US Diplomatic Post: Lahore,2023-05-01,24,24,80.5,78.3,24
+8664,US Diplomatic Post: Lahore,2023-06-01,30,30,57.0,54.5,30
+8664,US Diplomatic Post: Lahore,2023-07-01,31,21,44.1,39.4,21
+8664,US Diplomatic Post: Lahore,2023-08-01,31,31,44.4,43.3,31
+8664,US Diplomatic Post: Lahore,2023-09-01,30,29,52.0,48.3,29
+8664,US Diplomatic Post: Lahore,2023-10-01,31,31,121.4,91.3,31
+8664,US Diplomatic Post: Lahore,2023-11-01,30,30,251.0,243.2,30
+8664,US Diplomatic Post: Lahore,2023-12-01,31,31,279.4,260.6,31
+8664,US Diplomatic Post: Lahore,2024-01-01,30,25,279.0,280.1,25
+8664,US Diplomatic Post: Lahore,2024-02-01,21,17,177.5,170.9,17
+8664,US Diplomatic Post: Lahore,2024-03-01,28,27,99.9,105.5,27
+8664,US Diplomatic Post: Lahore,2024-04-01,30,6,74.5,74.3,6
+8664,US Diplomatic Post: Lahore,2024-05-01,30,1,67.0,67.0,1
+8664,US Diplomatic Post: Lahore,2024-06-01,30,4,67.0,67.0,4
+8664,US Diplomatic Post: Lahore,2024-07-01,31,30,63.3,58.3,30
+8664,US Diplomatic Post: Lahore,2024-08-01,31,31,45.3,43.7,31
+8664,US Diplomatic Post: Lahore,2024-09-01,30,30,67.8,69.8,30
+8664,US Diplomatic Post: Lahore,2024-10-01,31,31,151.6,119.4,31
+8664,US Diplomatic Post: Lahore,2024-11-01,30,30,328.6,279.4,30
+8664,US Diplomatic Post: Lahore,2024-12-01,31,31,232.0,200.6,31
+8664,US Diplomatic Post: Lahore,2025-01-01,31,30,234.2,216.5,30
+8664,US Diplomatic Post: Lahore,2025-02-01,28,17,160.3,157.8,17
+8664,US Diplomatic Post: Lahore,2025-03-01,4,0,,,0
+4568423,Model Town,2025-05-01,2,0,,,0
+4568423,Model Town,2025-06-01,29,21,44.2,45.4,21
+4568423,Model Town,2025-07-01,31,28,51.8,49.2,28
+4568423,Model Town,2025-08-01,31,31,41.9,45.1,31
+4568423,Model Town,2025-09-01,30,29,49.8,46.4,28
+4568423,Model Town,2025-10-01,31,29,128.0,118.5,29
+4568423,Model Town,2025-11-01,30,29,219.3,226.4,29
+4568423,Model Town,2025-12-01,31,29,248.0,250.5,29
+4568423,Model Town,2026-01-01,31,29,181.4,180.0,29
+4568423,Model Town,2026-02-01,28,28,124.5,121.4,28
+4568423,Model Town,2026-03-01,31,29,69.3,61.7,28
+4568423,Model Town,2026-04-01,30,29,41.4,35.3,29
+4568423,Model Town,2026-05-01,30,22,49.0,44.1,22
+4568423,Model Town,2026-06-01,27,20,43.5,44.7,19
+4568423,Model Town,2026-07-01,31,31,47.9,46.1,31
+4568423,Model Town,2026-08-01,31,30,48.9,44.3,30
+4568423,Model Town,2026-09-01,30,30,57.8,52.1,30
+4568423,Model Town,2026-10-01,31,31,82.5,74.8,31
+4568423,Model Town,2026-11-01,13,13,177.5,182.5,13

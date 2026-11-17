@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 
 import psycopg
 
@@ -47,7 +48,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"sentinel {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("check-db", help="connect to the warehouse and print versions")
-    sub.add_parser("discover", help="list OpenAQ locations of the scope country (needs API key)")
+    dc = sub.add_parser(
+        "discover", help="list OpenAQ locations of the scope country (needs API key)"
+    )
+    dc.add_argument("--from-csv", type=Path, help="no API: locations from a provenance CSV")
     cl = sub.add_parser("coverage-listing", help="S3 listings for candidate locations")
     cl.add_argument("--lahore-only", action="store_true", help="only locations within the radius")
     fe = sub.add_parser("fetch", help="download listed files of chosen locations")
@@ -69,6 +73,9 @@ def main(argv: list[str] | None = None) -> int:
         return check_db()
 
     scope, paths = load_scope(), m1.Paths()
+    if args.command == "discover" and args.from_csv:
+        print(m1.discover_from_csv(scope, args.from_csv, paths))
+        return 0
     if args.command == "discover":
         key = settings.openaq_api_key.get_secret_value()
         if not key:

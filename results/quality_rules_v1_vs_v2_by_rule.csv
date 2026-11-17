@@ -1,0 +1,14 @@
+location_id,rules,rule_id,rows
+8664,v1,Q03_negative,8107
+8664,v1,Q12_high_band,646
+8664,v1,Q13_stuck,133
+8664,v1,Q14_spike_hampel,1525
+8664,v2,Q00_missing_code,7879
+8664,v2,Q03_negative,228
+8664,v2,Q12_high_band,646
+8664,v2,Q13_stuck,133
+8664,v2,Q14_spike_hampel,1525
+4568423,v1,Q12_high_band,4
+4568423,v1,Q14_spike_hampel,294
+4568423,v2,Q12_high_band,4
+4568423,v2,Q14_spike_hampel,294

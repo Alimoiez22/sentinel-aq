@@ -95,6 +95,27 @@ def discover(scope: Scope, client: OpenAQClient, paths: Paths) -> Path:
     return paths.locations_csv
 
 
+def discover_from_csv(scope: Scope, source_csv: Path, paths: Paths) -> Path:
+    """Discovery without the API: locations listed by hand in a provenance CSV
+    (config/locations_lahore.csv: ids read on the public OpenAQ Explorer, coordinates
+    and sensor ids verified from archive files). Same output format as `discover`."""
+    from sentinel.discovery import haversine_km
+
+    df = pl.read_csv(source_csv, infer_schema_length=None)
+    df = df.with_columns(
+        pl.struct("latitude", "longitude").map_elements(
+            lambda r: round(haversine_km(scope.lahore.latitude, scope.lahore.longitude,
+                                         r["latitude"], r["longitude"]), 2),
+            return_dtype=pl.Float64).alias("distance_lahore_km"),
+    ).select(LOCATION_COLUMNS).sort("location_id")  # fmt: skip
+    paths.results.mkdir(parents=True, exist_ok=True)
+    df.write_csv(paths.locations_csv)
+    record("discover-from-csv", [str(paths.locations_csv)],
+           {"source": str(source_csv), "n_locations": df.height,
+            "note": "OpenAQ API key unavailable; locations from the public Explorer"})  # fmt: skip
+    return paths.locations_csv
+
+
 def candidates(paths: Paths, scope: Scope, lahore_only: bool) -> pl.DataFrame:
     """Fixed-site locations with at least one sensor for a scope parameter."""
     df = pl.read_csv(paths.locations_csv, infer_schema_length=None)
@@ -240,10 +261,11 @@ def render_markdown(summary: pl.DataFrame, start: date, end: date, scope: Scope)
         "Winter = Nov-Feb. A day counts as >=18h when at least 18 distinct hourly timestamps "
         "exist for the parameter (EU 2008/50/EC criterion, RESEARCH §2.9).",
         "",
-        "| id | name | provider | monitor | km to Lahore | days with file | winter days with file "
+        "| id | name | provider | monitor | km to Lahore | days with file / range "
+        "| days with file / active span | winter days with file "
         + "".join(f"| {p} days >=18h | {p} winter >=18h " for p in scope.parameters)
         + "| median arrival lag h | licences |",
-        "|" + "---|" * (9 + 2 * len(scope.parameters)),
+        "|" + "---|" * (10 + 2 * len(scope.parameters)),
     ]
     for r in summary.iter_rows(named=True):
         cells = [
@@ -253,6 +275,7 @@ def render_markdown(summary: pl.DataFrame, start: date, end: date, scope: Scope)
             str(r["is_monitor"]),
             str(r["distance_lahore_km"]),
             _pct(r["days_with_file"], r["days_in_range"]),
+            _pct(r["days_with_file"], r.get("days_in_active_span")),
             _pct(r["winter_days_with_file"], r["winter_days_in_range"]),
         ]
         for p in scope.parameters:
