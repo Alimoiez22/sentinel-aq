@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="944" height="606" font-family="Consolas, Menlo, monospace" font-size="13">
+<rect width="944" height="606" rx="8" fill="#0d1117"/>
+<rect width="944" height="30" rx="8" fill="#161b22"/>
+<circle cx="16" cy="15" r="5" fill="#ff5f56"/>
+<circle cx="34" cy="15" r="5" fill="#ffbd2e"/>
+<circle cx="52" cy="15" r="5" fill="#27c93f"/>
+<text x="80" y="20" fill="#8b949e">$ make demo   (real output, captured 2026-11-20)</text>
+<text x="16" y="59" fill="#c9d1d9" xml:space="preserve">Sentinel-AQ demo: guarded recovery, 2 scheduled runs, 6 location-days</text>
+<text x="16" y="76" fill="#c9d1d9" xml:space="preserve">  injected: truncated transfer of location 99000001 on 2025-11-01</text>
+<text x="16" y="93" fill="#c9d1d9" xml:space="preserve">  injected: retroactive revision of location 99000002 on 2025-11-01</text>
+<text x="16" y="110" fill="#c9d1d9" xml:space="preserve"></text>
+<text x="16" y="127" fill="#c9d1d9" xml:space="preserve">Incidents -&gt; decisions (ops.incident)</text>
+<text x="16" y="144" fill="#c9d1d9" xml:space="preserve">  id  location  day         failure class        rule  action              outcome    verified  escalated  recovery s</text>
+<text x="16" y="161" fill="#c9d1d9" xml:space="preserve">  --  --------  ----------  -------------------  ----  ------------------  ---------  --------  ---------  ----------</text>
+<text x="16" y="178" fill="#c9d1d9" xml:space="preserve">  1   99000001  2025-11-01  transfer_corruption  P03   refetch_and_reload  recovered  yes       no         0.233     </text>
+<text x="16" y="195" fill="#c9d1d9" xml:space="preserve">  2   99000002  2025-11-01  revision             P06   apply_revision      recovered  yes       no         0.064     </text>
+<text x="16" y="212" fill="#c9d1d9" xml:space="preserve"></text>
+<text x="16" y="229" fill="#c9d1d9" xml:space="preserve">Audit log (ops.action_log, append-only)</text>
+<text x="16" y="246" fill="#c9d1d9" xml:space="preserve">  incident  action              result                          </text>
+<text x="16" y="263" fill="#c9d1d9" xml:space="preserve">  --------  ------------------  --------------------------------</text>
+<text x="16" y="280" fill="#c9d1d9" xml:space="preserve">  1         refetch_and_reload  done                            </text>
+<text x="16" y="297" fill="#c9d1d9" xml:space="preserve">  1         verify              verified                        </text>
+<text x="16" y="314" fill="#c9d1d9" xml:space="preserve">  2         apply_revision      already enforced by the pipeline</text>
+<text x="16" y="331" fill="#c9d1d9" xml:space="preserve">  2         verify              verified                        </text>
+<text x="16" y="348" fill="#c9d1d9" xml:space="preserve"></text>
+<text x="16" y="365" fill="#c9d1d9" xml:space="preserve">Outputs marked revised</text>
+<text x="16" y="382" fill="#c9d1d9" xml:space="preserve">  location  local date  parameter  status </text>
+<text x="16" y="399" fill="#c9d1d9" xml:space="preserve">  --------  ----------  ---------  -------</text>
+<text x="16" y="416" fill="#c9d1d9" xml:space="preserve">  99000002  2025-11-01  pm10       revised</text>
+<text x="16" y="433" fill="#c9d1d9" xml:space="preserve">  99000002  2025-11-01  pm25       revised</text>
+<text x="16" y="450" fill="#c9d1d9" xml:space="preserve"></text>
+<text x="16" y="467" fill="#c9d1d9" xml:space="preserve">Published tables vs golden rebuild</text>
+<text x="16" y="484" fill="#c9d1d9" xml:space="preserve">  table                       missing  extra  wrong  checksum equal</text>
+<text x="16" y="501" fill="#c9d1d9" xml:space="preserve">  --------------------------  -------  -----  -----  --------------</text>
+<text x="16" y="518" fill="#c9d1d9" xml:space="preserve">  wh.fact_measurement_hourly  0        0      0      yes           </text>
+<text x="16" y="535" fill="#c9d1d9" xml:space="preserve">  wh.mart_daily_location      0        0      0      yes           </text>
+<text x="16" y="552" fill="#c9d1d9" xml:space="preserve">  wh.mart_exceedance_summary  0        0      0      yes           </text>
+<text x="16" y="569" fill="#c9d1d9" xml:space="preserve"></text>
+<text x="16" y="586" fill="#7ee787" xml:space="preserve">RESULT: verified recovery, outputs equal golden</text>
+</svg>

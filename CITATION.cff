@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Sentinel-AQ: Correctness-Verified Recovery for an Incremental Air-Quality Pipeline"
+abstract: "A data-engineering study on real OpenAQ PM2.5 data from Lahore (2,438 location-days, 2019-2026): an incremental PostgreSQL/PostGIS pipeline with data contracts, versioned quality rules and idempotent loads; a golden rebuild that proves published tables equal a from-scratch rebuild; a seeded catalogue of 15 fault types; and a deterministic, policy-bounded recovery engine evaluated against plain retries (320 trials on synthetic and real data)."
+authors:
+  - family-names: "Moiez"
+    given-names: "Ali"
+version: "1.0.0"
+date-released: "2026-11-20"
+license: MIT
+repository-code: "https://github.com/Alimoiez22/sentinel-aq"
+keywords:
+  - data engineering
+  - data pipelines
+  - data quality
+  - fault tolerance
+  - idempotency
+  - PostgreSQL
+  - PostGIS
+  - Apache Airflow
+  - air quality
+  - OpenAQ
+  - Lahore

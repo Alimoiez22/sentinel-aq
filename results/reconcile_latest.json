@@ -1,8 +1,8 @@
 [
  {
   "table": "wh.fact_measurement_hourly",
-  "live_rows": 48267,
-  "golden_rows": 48267,
+  "live_rows": 48291,
+  "golden_rows": 48291,
   "missing": 0,
   "extra": 0,
   "wrong": 0,
@@ -12,8 +12,8 @@
  },
  {
   "table": "wh.mart_daily_location",
-  "live_rows": 2437,
-  "golden_rows": 2437,
+  "live_rows": 2438,
+  "golden_rows": 2438,
   "missing": 0,
   "extra": 0,
   "wrong": 0,

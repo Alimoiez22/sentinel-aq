@@ -8,11 +8,11 @@ table{border-collapse:collapse;margin:8px 0 24px;display:block;overflow-x:auto}
 td,th{border:1px solid var(--line);padding:4px 8px;text-align:left;white-space:nowrap}
 th{background:rgba(127,127,127,.12)}p.m{color:var(--mut)}</style></head><body>
 <h1>Sentinel-AQ operations</h1>
-<p class='m'>Database <code>warehouse</code>, generated 2026-11-17T15:50:56+00:00 by <code>make dashboard</code>.</p>
+<p class='m'>Database <code>warehouse</code>, generated 2026-11-20T10:32:05+00:00 by <code>make dashboard</code>.</p>
 <h2>Publication status</h2>
 <table><tr><th>status</th><th>location_days</th><th>first_day</th><th>last_day</th></tr>
 <tr><td>blocked</td><td>16</td><td>2021-06-26</td><td>2024-01-29</td></tr>
-<tr><td>complete</td><td>1952</td><td>2019-05-23</td><td>2026-11-13</td></tr>
+<tr><td>complete</td><td>1953</td><td>2019-05-23</td><td>2026-11-14</td></tr>
 <tr><td>partial</td><td>469</td><td>2019-06-19</td><td>2026-08-22</td></tr>
 </table>
 <h2>Incidents and decisions (latest 50)</h2>
@@ -20,19 +20,20 @@ th{background:rgba(127,127,127,.12)}p.m{color:var(--mut)}</style></head><body>
 <h2>Recovery times by failure class</h2>
 <p class='m'>No rows.</p>
 <h2>Quality rule hits</h2>
-<table><tr><th>rule_id</th><th>action</th><th>batches</th><th>rows_hit</th><th>pct_of_rows</th></tr>
-<tr><td>B01_reject_rate</td><td>block</td><td>16</td><td>16</td><td>5.13</td></tr>
-<tr><td>Q00_missing_code</td><td>quarantine</td><td>545</td><td>7879</td><td>60.99</td></tr>
-<tr><td>Q03_negative</td><td>quarantine</td><td>19</td><td>228</td><td>59.38</td></tr>
-<tr><td>Q12_high_band</td><td>flag</td><td>186</td><td>650</td><td>14.41</td></tr>
-<tr><td>Q13_stuck</td><td>flag</td><td>7</td><td>133</td><td>79.17</td></tr>
-<tr><td>Q14_spike_hampel</td><td>flag</td><td>1196</td><td>1819</td><td>3.77</td></tr>
-<tr><td>Q16_out_of_scope</td><td>info</td><td>528</td><td>47432</td><td>80.00</td></tr>
+<table><tr><th>rule_id</th><th>action</th><th>batches_hit</th><th>rows_hit</th><th>pct_of_all_rows</th><th>pct_of_rows_in_batches_hit</th></tr>
+<tr><td>B01_reject_rate</td><td>block</td><td>16</td><td>16</td><td>0.02</td><td>5.13</td></tr>
+<tr><td>Q00_missing_code</td><td>quarantine</td><td>545</td><td>7879</td><td>7.58</td><td>60.99</td></tr>
+<tr><td>Q03_negative</td><td>quarantine</td><td>19</td><td>228</td><td>0.22</td><td>59.38</td></tr>
+<tr><td>Q12_high_band</td><td>flag</td><td>186</td><td>650</td><td>0.63</td><td>14.41</td></tr>
+<tr><td>Q13_stuck</td><td>flag</td><td>7</td><td>133</td><td>0.13</td><td>79.17</td></tr>
+<tr><td>Q14_spike_hampel</td><td>flag</td><td>1196</td><td>1819</td><td>1.75</td><td>3.77</td></tr>
+<tr><td>Q16_out_of_scope</td><td>info</td><td>529</td><td>47528</td><td>45.73</td><td>80.00</td></tr>
 </table>
 <h2>Revision history</h2>
 <p class='m'>No rows.</p>
 <h2>Batch timeline (latest 50)</h2>
 <table><tr><th>batch_id</th><th>location_id</th><th>source_date</th><th>revision_no</th><th>status</th><th>header_variant</th><th>raw_row_count</th><th>arrival_ts</th><th>stages_done</th></tr>
+<tr><td>2438</td><td>4568423</td><td>2026-11-14</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-18 18:25:18.581361+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 <tr><td>2437</td><td>4568423</td><td>2026-11-13</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:46.183647+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 <tr><td>2436</td><td>4568423</td><td>2026-11-12</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:45.419473+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 <tr><td>2435</td><td>4568423</td><td>2026-11-11</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:44.659967+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
@@ -82,6 +83,5 @@ th{background:rgba(127,127,127,.12)}p.m{color:var(--mut)}</style></head><body>
 <tr><td>2391</td><td>4568423</td><td>2026-09-28</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:10.645985+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 <tr><td>2390</td><td>4568423</td><td>2026-09-27</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:09.860164+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 <tr><td>2389</td><td>4568423</td><td>2026-09-26</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:09.128906+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
-<tr><td>2388</td><td>4568423</td><td>2026-09-25</td><td>0</td><td>published</td><td>B</td><td>120</td><td>2026-11-17 14:30:08.365384+00:00</td><td>staged,fact,quality,marts,verified</td></tr>
 </table>
 </body></html>

@@ -9,7 +9,8 @@ Prints incident -> decision -> action -> verification, then the golden compariso
 from __future__ import annotations
 
 import tempfile
-from datetime import timedelta
+from datetime import date, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -91,24 +92,55 @@ def run(seed: int = 11) -> dict[str, Any]:
     }
 
 
+def _cell(v: object) -> str:
+    """Plain text for a database value (ISO dates, rounded decimals, yes/no)."""
+    if isinstance(v, bool):
+        return "yes" if v else "no"
+    if isinstance(v, date):
+        return v.isoformat()
+    if isinstance(v, Decimal):
+        return f"{float(v):.3f}"
+    return "-" if v is None else str(v)
+
+
+def table(header: list[str], rows: list[tuple[Any, ...]]) -> str:
+    """Fixed-width text table."""
+    cells = [header] + [[_cell(v) for v in r] for r in rows]
+    widths = [max(len(c[i]) for c in cells) for i in range(len(header))]
+
+    def line(c: list[str]) -> str:
+        return "  " + "  ".join(x.ljust(w) for x, w in zip(c, widths, strict=True))
+
+    rule = "  " + "  ".join("-" * w for w in widths)
+    return "\n".join([line(header), rule] + [line(c) for c in cells[1:]])
+
+
 def print_report(out: dict[str, Any]) -> None:
     """Human-readable demo output."""
-    print(f"Injected: truncated transfer of {out['fault_day']} ; revision of {out['revision_day']}")
+    (l1, d1), (l2, d2) = out["fault_day"], out["revision_day"]
+    print("Sentinel-AQ demo: guarded recovery, 2 scheduled runs, 6 location-days")
+    print(f"  injected: truncated transfer of location {l1} on {d1.isoformat()}")
+    print(f"  injected: retroactive revision of location {l2} on {d2.isoformat()}")
+    print()
+    print("Incidents -> decisions (ops.incident)")
+    print(table(
+        ["id", "location", "day", "failure class", "rule", "action", "outcome",
+         "verified", "escalated", "recovery s"],
+        [(r[0], r[1], r[2], r[3], r[5], r[6], r[7], r[8], r[9], r[10])
+         for r in out["incidents"]],
+    ))  # fmt: skip
+    print()
+    print("Audit log (ops.action_log, append-only)")
+    print(table(["incident", "action", "result"], out["actions"]))
+    print()
+    print("Outputs marked revised")
+    print(table(["location", "local date", "parameter", "status"], out["revised_outputs"]))
+    print()
+    print("Published tables vs golden rebuild")
+    print(table(["table", "missing", "extra", "wrong", "checksum equal"], out["diffs"]))
+    print()
     print(
-        "\nIncidents (id, location, day, class, decision, rule, action, outcome, verified,"
-        " escalated, time_to_verified_recovery_s):"
-    )
-    for r in out["incidents"]:
-        print("  ", r)
-    print("\nAudit log (incident, action, result):")
-    for r in out["actions"]:
-        print("  ", r)
-    print("\nOutputs marked revised:", out["revised_outputs"])
-    print("\nPublished vs golden (table, missing, extra, wrong, checksum_equal):")
-    for d in out["diffs"]:
-        print("  ", d)
-    print(
-        "\nRESULT:",
+        "RESULT:",
         "verified recovery, outputs equal golden"
         if out["golden_equal"]
         else "OUTPUTS DIFFER FROM GOLDEN",

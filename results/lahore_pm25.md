@@ -8,7 +8,7 @@ Exceedance day = complete day (>= 18 h) with daily mean > 15 µg/m³ (WHO 2021 2
 | location_id | name | days_gated | complete_days | exceedance_days |
 |---|---|---|---|---|
 | 8664 | US Diplomatic Post: Lahore | 1909 | 1464 | 1448 |
-| 4568423 | Model Town | 528 | 488 | 485 |
+| 4568423 | Model Town | 529 | 489 | 486 |
 
 ## Winters (Nov-Feb; labelled by the year the winter starts)
 
@@ -21,4 +21,4 @@ Exceedance day = complete day (>= 18 h) with daily mean > 15 µg/m³ (WHO 2021 2
 | 8664 | 2023 | 103 | 254.2 | 103 |
 | 8664 | 2024 | 108 | 248.2 | 108 |
 | 4568423 | 2025 | 115 | 193.9 | 115 |
-| 4568423 | 2026 | 13 | 177.5 | 13 |
+| 4568423 | 2026 | 14 | 172.6 | 14 |

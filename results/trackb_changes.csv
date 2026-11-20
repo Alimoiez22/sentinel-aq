@@ -1,0 +1,2 @@
+run_id,key,location_id,source_date,change,lateness_h_upper_bound,rows_added,rows_removed,values_changed
+20261118T182259Z,records/csv.gz/locationid=4568423/year=2026/month=11/location-4568423-20261114.csv.gz,4568423,2026-11-14,new,90.4,,,

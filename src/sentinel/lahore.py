@@ -54,6 +54,16 @@ def frame(conn: Conn, sql: str) -> pl.DataFrame:
                         orient="row", infer_schema_length=None)  # fmt: skip
 
 
+def _polyline(points: list[str], color: str) -> str:
+    """A line for 2+ points; a dot for an isolated month."""
+    if len(points) == 1:
+        cx, cy = points[0].split(",")
+        return f'<circle cx="{cx}" cy="{cy}" r="2.2" fill="{color}"/>'
+    return (
+        f'<polyline fill="none" stroke="{color}" stroke-width="1.6" points="{" ".join(points)}"/>'
+    )
+
+
 def svg_monthly(df: pl.DataFrame, path: Path, guideline: float = 15.0) -> Path:
     """Monthly median of daily means per location, with the WHO 24-h guideline line."""
     w, h, left, right, top, bottom = 760, 340, 56, 16, 36, 48
@@ -77,7 +87,10 @@ def svg_monthly(df: pl.DataFrame, path: Path, guideline: float = 15.0) -> Path:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
         'font-family="sans-serif" font-size="11">',
         f'<text x="{left}" y="20" font-size="14">Lahore PM2.5: monthly median of daily '
-        "means (published, complete days only)</text>",
+        "means (published, complete days only; gaps = no complete day)</text>",
+        f'<text x="14" y="{top + (h - top - bottom) / 2:.0f}" '
+        f'transform="rotate(-90 14 {top + (h - top - bottom) / 2:.0f})" '
+        'text-anchor="middle">PM2.5, µg/m³</text>',
     ]
     for t in range(0, int(ymax) + 1, 50):
         parts.append(
@@ -97,12 +110,21 @@ def svg_monthly(df: pl.DataFrame, path: Path, guideline: float = 15.0) -> Path:
         jan = [m for m in months if m.year == yr]
         parts.append(f'<text x="{x(jan[0]):.1f}" y="{h - bottom + 16}">{yr}</text>')
     for i, ((loc, name), g) in enumerate(d.group_by(["location_id", "name"], maintain_order=True)):
-        pts = " ".join(
-            f"{x(m):.1f},{y(v):.1f}"
-            for m, v in zip(g["month"].to_list(), g["median_daily_mean"].to_list(), strict=True)
-        )
         c = colors[i % len(colors)]
-        parts.append(f'<polyline fill="none" stroke="{c}" stroke-width="1.6" points="{pts}"/>')
+        # One polyline per run of consecutive months: a month without complete days is a
+        # GAP in the line, never an interpolated segment.
+        segment: list[str] = []
+        prev: date | None = None
+        for m, v in zip(g["month"].to_list(), g["median_daily_mean"].to_list(), strict=True):
+            consecutive = prev is not None and (m.year * 12 + m.month) - (
+                prev.year * 12 + prev.month) == 1  # fmt: skip
+            if segment and not consecutive:
+                parts.append(_polyline(segment, c))
+                segment = []
+            segment.append(f"{x(m):.1f},{y(v):.1f}")
+            prev = m
+        if segment:
+            parts.append(_polyline(segment, c))
         parts.append(
             f'<rect x="{left + i * 300}" y="{h - 18}" width="12" height="12" fill="{c}"/>'
             f'<text x="{left + 18 + i * 300}" y="{h - 8}">{html.escape(str(name))} '
