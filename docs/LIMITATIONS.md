@@ -28,9 +28,9 @@
   evaluation.** The classifier was frozen and evaluated on held-out seeds (POLICY.md),
   but the fault catalogue itself reflects what the author anticipated.
 * **The manual-mode baseline is not measured** (needs a human operator).
-* **Track B is collecting data:** snapshots on 2026-11-17, 11-18 and 11-20 found new
-  files but 0 revised files so far (results/trackb_report.md). A daily schedule has run
-  since 2026-11-20 (RUNBOOK). A meaningful revision rate needs several weeks.
+* **Track B is future work:** three snapshots (2026-11-17, 11-18, 11-20) found new files
+  and 0 revised files (results/trackb_report.md). No schedule runs, so no revision
+  rate is claimed. Collecting it needs several weeks of daily snapshots (RUNBOOK).
 * **The real-data Track A window is small:** 3 days per location (6 location-days).
 * **"Inappropriate action"**: the "moved output further from golden" criterion is not
   measured per action.

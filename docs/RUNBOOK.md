@@ -92,19 +92,11 @@ an issue with them. Do not act until the failure is understood.
 3. `make manual-finish`: records elapsed time and damage in
    `experiments/results/manual_trials.csv`, labelled human-operated, with your trial number.
 
-## Track B daily snapshot (Windows Task Scheduler)
-Registered 2026-11-20 as task **"Sentinel-AQ daily snapshot"**: every day at 07:00, it runs
-`scripts/snapshot.sh` through Git Bash. If the laptop is off at 07:00, the task runs
-when it is next on (StartWhenAvailable). Docker Desktop must be running; if it is not,
-the run is logged as `FAILED docker-not-running` and that day is a gap. Gaps are
-reported, never filled.
-
-PowerShell commands:
-```powershell
-Get-ScheduledTask -TaskName "Sentinel-AQ daily snapshot" | Get-ScheduledTaskInfo  # last/next run
-Get-Content D:\projects\sentinel-aq\data\snapshots\_runs.log                        # one line per run
-Start-ScheduledTask -TaskName "Sentinel-AQ daily snapshot"                         # run now
-Unregister-ScheduledTask -TaskName "Sentinel-AQ daily snapshot" -Confirm:$false    # remove
+## Track B snapshots (manual, optional)
+Track B measures how often OpenAQ revises old files. It needs a snapshot per day over
+several weeks. No schedule is installed (a daily task ran on 2026-11-20 and was removed
+the same day at the author's request). To collect snapshots, run by hand:
+```bash
+bash scripts/snapshot.sh          # one snapshot; appends to data/snapshots/_runs.log
+make revisions-report             # results/trackb_report.md
 ```
-Turn snapshots into results with `make revisions-report` (results/trackb_report.md). To
-also publish the newly arrived days: `make run && make golden && make reconcile`.

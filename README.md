@@ -9,8 +9,7 @@ evaluated on real OpenAQ PM2.5 data from Lahore, Pakistan.
 ![airflow](https://img.shields.io/badge/Airflow-3.3-017CEE)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
-**Author:** Ali Moiez · **Status:** v1.0, complete and reproducible; real-world revision
-study (Track B) is collecting data · [Cite this project](CITATION.cff)
+**Author:** Ali Moiez · **Status:** v1.0, complete and reproducible · [Cite this project](CITATION.cff)
 
 ---
 
@@ -184,9 +183,9 @@ human **by design**. Metric definitions: [EXPERIMENTS](docs/EXPERIMENTS.md).
 - **Done (v1.0):** pipeline, quality rules, warehouse, golden rebuild, fault catalogue,
   recovery engine, Airflow DAGs, dashboard, both experiment tracks on synthetic and real
   data, CI.
-- **In progress, Track B:** daily snapshots record every file version, so real upstream
-  revisions become measurable (`make revisions-report`); a meaningful window needs
-  several weeks.
+- **Future work, Track B:** daily snapshots (`scripts/snapshot.sh`) record every file
+  version, so real upstream revisions become measurable (`make revisions-report`). Three
+  snapshots so far found 0 revisions; a meaningful rate needs several weeks.
 - **Future work:** a manual-operator baseline (`make manual-start` / `make manual-finish`);
   complete location discovery with an OpenAQ API key; more Lahore sensors.
 
